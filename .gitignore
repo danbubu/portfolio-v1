@@ -8,6 +8,10 @@ node_modules
 /package
 dist
 
+# Firebase
+.firebase/
+public/index.html
+
 # Environment variables (CRITICAL - API keys)
 .env
 .env.local

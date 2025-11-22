@@ -25,10 +25,31 @@
 	let scrollProgress = 0;
 	let showBackToTop = false;
 
-	// Active Users count-up animation
-	let activeUsersCount = 0;
-	const targetUsers = 140;
-	const animationDuration = 1500; // 1.5 seconds
+	// Project Carousel state
+	let currentSlide = 0;
+	const carouselSlides = [
+		{
+			title: 'Airdrop Tracker',
+			status: 'Live',
+			statusColor: 'bg-green-500',
+			metric: '140+ Active Users',
+			subtext: 'DeFi Automation SaaS'
+		},
+		{
+			title: 'The Control Room',
+			status: 'Building',
+			statusColor: 'bg-purple-500',
+			metric: 'Esports Engine',
+			subtext: 'Automated Tournament Command Center'
+		},
+		{
+			title: 'InnerFeed',
+			status: 'Building',
+			statusColor: 'bg-orange-500',
+			metric: 'Social Sanctuary',
+			subtext: 'Anti-vanity metric blogging platform'
+		}
+	];
 
 	// Ensure proper typing
 	$: typedProjects = $projects as Project[];
@@ -171,26 +192,14 @@
 		window.addEventListener('scroll', handleScroll);
 		handleScroll(); // Initial call
 
-		// Active Users count-up animation
-		const startTime = Date.now();
-		const animateCount = () => {
-			const elapsed = Date.now() - startTime;
-			const progress = Math.min(elapsed / animationDuration, 1);
-			// Easing function for smooth animation
-			const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-			activeUsersCount = easeOutCubic * targetUsers;
-			
-			if (progress < 1) {
-				requestAnimationFrame(animateCount);
-			} else {
-				activeUsersCount = targetUsers;
-			}
-		};
+		// Project Carousel auto-play
+		const carouselInterval = setInterval(() => {
+			currentSlide = (currentSlide + 1) % carouselSlides.length;
+		}, 4000); // 4 seconds per slide
 		
-		// Start animation after a short delay for better UX
-		setTimeout(() => {
-			requestAnimationFrame(animateCount);
-		}, 300);
+		return () => {
+			clearInterval(carouselInterval);
+		};
 
 		// Initialize GSAP asynchronously
 			(async () => {
@@ -633,6 +642,7 @@
 									{ title: 'Chapter 16', artist: 'Dave, Kano' },
 									{ title: 'First in Class', artist: 'Omar Sterling' },
 									{ title: 'We dey manage', artist: 'M.anifest' },
+									{ title: 'Wonderful Wonder', artist: 'Nathaniel Bassey, Love Song' },
 									{ title: 'Disco', artist: 'Surf Curse' }
 								] as song}
 									<div class="playlist-item">
@@ -656,6 +666,7 @@
 									{ title: 'Chapter 16', artist: 'Dave, Kano' },
 									{ title: 'First in Class', artist: 'Omar Sterling' },
 									{ title: 'We dey manage', artist: 'M.anifest' },
+									{ title: 'Wonderful Wonder', artist: 'Nathaniel Bassey, Love Song' },
 									{ title: 'Disco', artist: 'Surf Curse' }
 								] as song}
 									<div class="playlist-item">
@@ -779,42 +790,61 @@
 						<span class="text-sm">♟️</span>
 						<span class="text-text-body text-xs">Chess</span>
 					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-sm">🪙</span>
+						<span class="text-text-body text-xs">Crypto & DeFi</span>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<span class="text-sm">📚</span>
+						<span class="text-text-body text-xs">Tech Research</span>
+					</div>
 				</div>
 			</div>
 			
-			<!-- Slot 7: Product Impact (Small Square - col-span-1 row-span-1, next to Beyond Code) -->
+			<!-- Slot 7: Project Carousel (Small Square - col-span-1 row-span-1, next to Beyond Code) -->
 			<div class="col-span-1 row-span-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden relative group">
 				<!-- Trend Line Background -->
 				<div class="absolute inset-0 opacity-10">
 					<svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
 						<defs>
-							<linearGradient id="impact-trend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+							<linearGradient id="carousel-trend-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
 								<stop offset="0%" style="stop-color:rgb(16,185,129);stop-opacity:0.3" />
 								<stop offset="100%" style="stop-color:rgb(6,182,212);stop-opacity:0.3" />
 							</linearGradient>
 						</defs>
 						<path d="M 0,80 Q 20,70 30,60 T 50,40 T 70,25 T 100,10" 
-							stroke="url(#impact-trend-gradient)" 
+							stroke="url(#carousel-trend-gradient)" 
 							stroke-width="1.5" 
 							fill="none" 
 							stroke-linecap="round"/>
-						<circle cx="100" cy="10" r="2" fill="url(#impact-trend-gradient)"/>
+						<circle cx="100" cy="10" r="2" fill="url(#carousel-trend-gradient)"/>
 					</svg>
 				</div>
 				<div class="relative z-10 h-full flex flex-col justify-between">
-					<div class="flex items-start justify-between">
-						<span class="text-text-heading font-semibold text-sm">Active Users</span>
-						<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-						</svg>
-					</div>
-					<div>
-						<div class="text-3xl font-bold mb-1 count-up-number">
-							<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
-								{Math.floor(activeUsersCount)}+
-							</span>
+					<div class="flex items-start justify-between mb-2">
+						<span class="text-text-heading font-semibold text-sm">Projects</span>
+						<div class="flex gap-1">
+							{#each carouselSlides as _, index}
+								<div class="w-1 h-1 rounded-full {index === currentSlide ? 'bg-white' : 'bg-white/30'} transition-colors"></div>
+							{/each}
 						</div>
-						<p class="text-text-muted text-[10px] font-mono">Across Airdrop Tracker</p>
+					</div>
+					<div class="carousel-container relative flex-1">
+						{#each carouselSlides as slide, index}
+							<div class="carousel-slide absolute inset-0 {index === currentSlide ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500">
+								<div class="flex items-center gap-1.5 mb-2">
+									<div class="w-2 h-2 rounded-full {slide.statusColor}"></div>
+									<span class="text-text-muted text-[9px] font-mono">{slide.status}</span>
+								</div>
+								<h4 class="text-text-heading font-semibold text-xs mb-1.5">{slide.title}</h4>
+								<div class="text-xl font-bold mb-1">
+									<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+										{slide.metric}
+									</span>
+								</div>
+								<p class="text-text-muted text-[9px] font-mono leading-tight">{slide.subtext}</p>
+							</div>
+						{/each}
 					</div>
 				</div>
 			</div>

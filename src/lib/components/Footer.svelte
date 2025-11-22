@@ -140,9 +140,12 @@
 		</div>
 
 		<!-- Copyright -->
-		<div class="border-t border-zinc-800 pt-8 text-center text-text-muted text-sm">
-			<p>
-				Designed & Built by Daniel Mawuena © {getCurrentYear()}. All rights reserved.
+		<div class="border-t border-zinc-800 pt-8 text-center">
+			<p class="text-text-heading text-sm mb-1">
+				Designed & Built by Daniel Mawuena © {getCurrentYear()}.
+			</p>
+			<p class="text-text-muted text-xs">
+				Engineered with <span class="text-text-heading">SvelteKit</span>, <span class="text-text-heading">Tailwind</span>, <span class="text-text-heading">GSAP</span>, & <span class="text-text-heading">Firebase</span>.
 			</p>
 		</div>
 	</div>

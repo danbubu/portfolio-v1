@@ -234,6 +234,15 @@
   .playlist-item:hover {
     transform: translateX(4px);
   }
+  
+  /* Project Carousel */
+  .carousel-container {
+    min-height: 60px;
+  }
+  
+  .carousel-slide {
+    transition: opacity 0.5s ease-in-out;
+  }
 
   /* Certification Shiny Polish Effect */
   .cert-shine-container {

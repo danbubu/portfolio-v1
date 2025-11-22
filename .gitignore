@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+/build
+/.svelte-kit
+/package
+dist
+
+# Environment variables (CRITICAL - API keys)
+.env
+.env.local
+.env.*
+!.env.example
+
+# System files
+.DS_Store
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Timestamps
+vite.config.js.timestamp
+vite.config.ts.timestamp
+
+

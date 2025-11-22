@@ -33,7 +33,7 @@
 			status: 'Live',
 			statusColor: 'bg-green-500',
 			metric: '140+ Active Users',
-			subtext: 'DeFi Automation SaaS'
+			subtext: 'DeFi Analytics Platform'
 		},
 		{
 			title: 'The Control Room',
@@ -228,49 +228,7 @@
 				delay: 0.4
 			});
 
-			// Floating badges animation - Smooth 60fps performance
-			gsap.to('.badge-float-1', {
-				y: '+=12',
-				duration: 2.5,
-				repeat: -1,
-				yoyo: true,
-				ease: 'sine.inOut',
-				force3D: true,
-				smoothOrigin: true
-			});
-
-			gsap.to('.badge-float-2', {
-				y: '+=12',
-				duration: 3,
-				repeat: -1,
-				yoyo: true,
-				ease: 'sine.inOut',
-				delay: 0.3,
-				force3D: true,
-				smoothOrigin: true
-			});
-
-			gsap.to('.badge-float-3', {
-				y: '+=12',
-				duration: 3.5,
-				repeat: -1,
-				yoyo: true,
-				ease: 'sine.inOut',
-				delay: 0.6,
-				force3D: true,
-				smoothOrigin: true
-			});
-
-			gsap.to('.badge-float-4', {
-				y: '+=12',
-				duration: 2.8,
-				repeat: -1,
-				yoyo: true,
-				ease: 'sine.inOut',
-				delay: 0.45,
-				force3D: true,
-				smoothOrigin: true
-			});
+			// Floating badges animation - Now handled by CSS keyframes
 
 			// Scroll reveal animations
 			gsap.utils.toArray('.reveal').forEach((element: any) => {
@@ -1136,6 +1094,32 @@
 		background: rgba(255, 255, 255, 0.1);
 		transform: translateY(-2px);
 		box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+	}
+
+	/* Floating Badge Animations - Zero Gravity Effect */
+	@keyframes float {
+		0%, 100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-10px);
+		}
+	}
+
+	.badge-float-1 {
+		animation: float 6s ease-in-out infinite;
+	}
+
+	.badge-float-2 {
+		animation: float 7s ease-in-out infinite;
+	}
+
+	.badge-float-3 {
+		animation: float 5s ease-in-out infinite;
+	}
+
+	.badge-float-4 {
+		animation: float 8s ease-in-out infinite;
 	}
 
 	/* Slow Pulse Animations */

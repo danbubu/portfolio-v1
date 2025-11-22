@@ -1,253 +1,150 @@
-# 🚀 Sleek & Ingenious Full-Stack Portfolio
-
-A sophisticated, dark-themed portfolio website built with **SvelteKit**, **TypeScript**, **Tailwind CSS**, and **GSAP animations**. This project demonstrates production-grade full-stack development skills with modern web technologies.
-
-## ✨ Features
-
-### 🎨 Design & Aesthetics
-
-- **Dark Mode Default**: Deep, technical, layered dark mode palette (Discord/Cursor-inspired)
-- **Abstract Geometric Design**: Clean lines, subtle glow effects, minimalistic aesthetic
-- **Responsive Design**: Fully responsive across all devices
-- **Professional Typography**: Inter/Fira Sans font families
-
-### 🎭 Wow-Factor Animations
-
-- **Cursor-Following Particle Effect**: Subtle particle trail that follows cursor movement
-- **GSAP Scroll Reveal**: Smooth animations as elements enter the viewport
-- **Fluid Page Transitions**: Seamless transitions between routes
-- **Parallax Effects**: Geometric shapes with parallax scrolling
-
-### 🛠️ Full-Stack Features
-
-#### 1. Contact via API
-
-- Contact form with server-side processing
-- SvelteKit server endpoint (`/api/contact/+server.ts`)
-- Form validation and error handling
-- **Check browser console** for client-side logs
-- **Check server console** for endpoint data reception
-
-#### 2. Admin Dashboard
-
-- Protected route at `/admin`
-- Project management interface
-- SvelteKit Actions for form processing
-- Real-time project list updates
-- **Check server console** for action logs
-
-### 📄 Content Sections
-
-- **Home/Intro**: Large, abstract geometric title with gradient text
-- **About Me**:
-  - Builder View (Project Contributions)
-  - Thinker View (Problem-Solving Philosophy)
-  - Skills & Certifications
-- **Projects**:
-  - Airdrop Tracker showcase with interactive code snippets
-  - 3D-like mockups with nested div layers
-  - Technology stack badges
-- **Contact**: API-integrated contact form
-
-## 🛠️ Tech Stack
-
-- **Framework**: SvelteKit 2.0
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Animations**: GSAP 3.12
-- **Build Tool**: Vite 5.0
-- **Adapter**: @sveltejs/adapter-auto
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-### Development
-
-1. Start the dev server: `npm run dev`
-2. Open `http://localhost:5173` in your browser
-3. Test the features:
-   - Move mouse to see cursor particles
-   - Scroll to see GSAP animations
-   - Submit contact form (check console)
-   - Visit `/admin` to add projects (check server console)
-
-## 📁 Project Structure
-
-```
-website_portfolio/
-├── src/
-│   ├── routes/
-│   │   ├── +page.svelte          # Main portfolio page
-│   │   ├── +layout.svelte        # Root layout with cursor effect
-│   │   ├── admin/
-│   │   │   ├── +page.svelte      # Admin dashboard UI
-│   │   │   └── +page.server.ts   # Server actions
-│   │   └── api/
-│   │       └── contact/
-│   │           └── +server.ts    # Contact API endpoint
-│   ├── lib/
-│   │   └── stores/
-│   │       └── projects.ts       # Svelte store for projects
-│   ├── app.css                   # Global styles & Tailwind
-│   └── app.html                  # HTML template
-├── static/
-│   └── favicon.svg               # Favicon
-└── configuration files...
-```
-
-## 🎯 Key Technical Demonstrations
-
-### 1. Server Endpoints
-
-The contact form demonstrates SvelteKit server endpoints:
-
-- **File**: `src/routes/api/contact/+server.ts`
-- **Method**: POST
-- **Features**: Request handling, validation, logging
-- **Check**: Server console for received data logs
-
-### 2. Server Actions
-
-The admin dashboard uses SvelteKit Actions:
-
-- **File**: `src/routes/admin/+page.server.ts`
-- **Action**: `addProject`
-- **Features**: Form processing, validation, state management
-- **Check**: Server console for action logs
-
-### 3. State Management
-
-Projects are managed with Svelte stores:
-
-- **File**: `src/lib/stores/projects.ts`
-- **Features**: Reactive state, type-safe updates
-- **Usage**: Shared across components
-
-### 4. GSAP Animations
-
-Advanced animations with GSAP:
-
-- Scroll-triggered reveals
-- Cursor-following effects
-- Page transitions
-- Parallax effects
-
-## 🎨 Customization
-
-### Update Personal Information
-
-Edit `src/routes/+page.svelte`:
-
-- Hero section title and description
-- About Me content (Builder/Thinker views)
-- Skills and certifications
-- Contact information
-
-### Modify Colors
-
-Edit `tailwind.config.js`:
-
-- `accent` colors (blue, purple, pink, cyan)
-- `dark` palette (background colors)
-
-### Add Projects
-
-- Use the Admin Dashboard at `/admin`
-- Or edit `src/lib/stores/projects.ts` directly
-
-## 📝 Important Notes
-
-### Console Logging
-
-- **Browser Console**: Check for client-side form submission logs
-- **Server Console** (Terminal): Check for:
-  - `📧 MOCK SVELTEKIT SERVER ENDPOINT RECEIVED DATA` (Contact form)
-  - `🔧 SVELTEKIT ACTION: ADD PROJECT` (Admin dashboard)
-
-### Data Persistence
-
-- Projects are stored in-memory (Svelte store)
-- Page refresh will reset to initial state
-- For production: Integrate with Firestore/Firebase
-
-### Production Deployment
-
-1. Build the project: `npm run build`
-2. Deploy to Vercel, Netlify, or your preferred platform
-3. Configure environment variables if needed
-4. Set up Firebase/Firestore for data persistence (optional)
-
-## 🐛 Troubleshooting
-
-### GSAP not working
-
-- Ensure GSAP is installed: `npm install gsap`
-- Check browser console for errors
-- Verify ScrollTrigger is registered
-
-### Form submission errors
-
-- Check server is running: `npm run dev`
-- Verify API endpoint is accessible
-- Check server console for errors
-
-### Admin dashboard not saving
-
-- Projects are in-memory (refresh resets)
-- Check server console for action logs
-- Verify form validation is passing
-
-## 📚 Documentation
-
-- [SvelteKit Docs](https://kit.svelte.dev)
-- [GSAP Docs](https://greensock.com/docs)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
-- [TypeScript Docs](https://www.typescriptlang.org/docs)
-
-## 🎓 Learning Resources
-
-This project demonstrates:
-
-- Full-stack SvelteKit development
-- Server endpoints and actions
-- State management with Svelte stores
-- Advanced animations with GSAP
-- TypeScript best practices
-- Tailwind CSS styling
-- Form handling and validation
-- API integration
-
-## 📄 License
-
-MIT License - Feel free to use this project for your own portfolio!
-
-## 🙏 Credits
-
-Built with:
-
-- SvelteKit
-- GSAP
-- Tailwind CSS
-- TypeScript
-- Vite
+# Daniel Mawuena | Digital Artisan Portfolio
+
+![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=for-the-badge&logo=greensock&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+
+> A high-performance, architecturally sound portfolio showcasing full-stack engineering capabilities through modern web technologies.
 
 ---
 
-**Ready to showcase your skills!** 🚀
+## Architecture
 
-For setup instructions, see [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+Built on **SvelteKit**—a deliberate engineering choice prioritizing performance, developer experience, and production readiness.
+
+### Why SvelteKit?
+
+- **Superior Performance**: Compile-time optimizations yield smaller bundles and faster runtime execution compared to React/Next.js
+- **Native Transitions**: Built-in transition system eliminates the need for external animation libraries for common UI patterns
+- **SSR/SSG Hybrid**: Server-side rendering with static generation capabilities for optimal SEO and load times
+- **Reactive by Design**: Svelte's reactivity model reduces boilerplate and improves code maintainability
+
+The portfolio embodies an **"Energetic Obsidian"** aesthetic—dark, sophisticated, with strategic use of color and motion. The layout centers around a **Bento Grid** system that adapts responsively while maintaining visual hierarchy.
+
+---
+
+## Tech Stack
+
+### Core Framework
+- **SvelteKit** — SSR/SSG framework with file-based routing
+- **TypeScript** — Type-safe development with full IDE support
+- **Vite** — Lightning-fast build tool and dev server
+
+### Styling & Design
+- **Tailwind CSS** — Utility-first CSS framework
+- **CSS Variables** — Dynamic theming and design tokens
+- **Custom Glassmorphism** — Frosted glass effects with backdrop filters
+
+### Animation & Interaction
+- **GSAP (GreenSock)** — Professional-grade animations for complex sequences
+- **Svelte Transitions** — Native transition system for component lifecycle
+- **ScrollTrigger** — Scroll-based animation orchestration
+
+### Functionality
+- **EmailJS** — Serverless contact form integration
+- **Lucide Svelte** — Modern, consistent icon system
+
+---
+
+## Features
+
+### Interactive Bento Grid
+A responsive, layout-aware grid system leveraging Svelte's native reactivity. Cards dynamically reorganize based on viewport size while maintaining visual coherence. The grid supports dual-mode toggling (Builder/Thinker) with smooth content transitions.
+
+### Cinematic Lighting
+- **Global Mouse Tracking**: Real-time spotlight effect following cursor movement
+- **Atmospheric Glow**: Aurora-style gradient overlays creating depth
+- **Glassmorphic Elements**: Backdrop blur effects for modern UI polish
+
+### Real-time Integration Ready
+Architecture designed for live API hooks. Contact forms, project metrics, and dynamic content can be seamlessly integrated without structural changes.
+
+### Performance Optimizations
+- Code splitting at route level
+- Lazy-loaded animations
+- Optimized image delivery
+- Minimal JavaScript footprint
+
+---
+
+## Local Development
+
+### Prerequisites
+- Node.js 18+ 
+- npm or pnpm
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/danbubu/portfolio-v1.git
+cd portfolio-v1
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Visit `http://localhost:5173` to view the portfolio.
+
+### Environment Variables
+
+Create a `.env` file in the root directory for EmailJS configuration:
+
+```env
+PUBLIC_EMAILJS_SERVICE_ID=your_service_id
+PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
+PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
+```
+
+> **Note**: The contact form requires EmailJS credentials. Without them, the form will not function, but the rest of the portfolio remains fully operational.
+
+### Build for Production
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## Project Structure
+
+```
+portfolio-v1/
+├── src/
+│   ├── lib/
+│   │   ├── components/     # Reusable Svelte components
+│   │   └── stores/         # Svelte stores for state management
+│   └── routes/             # File-based routing
+│       ├── +page.svelte    # Main portfolio page
+│       ├── +layout.svelte  # Root layout
+│       └── api/            # API endpoints
+├── static/                 # Static assets
+└── public/                 # Public assets
+```
+
+---
+
+## License
+
+This portfolio is a personal project. All rights reserved.
+
+---
+
+## Contact
+
+**Daniel Mawuena**  
+Full Stack Architect
+
+- Portfolio: [danielmawuena.com](https://danielmawuena.com)
+- Email: danielmawuena75@gmail.com
+- GitHub: [@danbubu](https://github.com/danbubu)
+
+---
+
+*Built with precision. Designed for impact.*

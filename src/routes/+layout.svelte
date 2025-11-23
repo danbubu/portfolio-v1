@@ -1,23 +1,26 @@
 <script lang="ts">
-	import '../app.css';
-	import { onMount } from 'svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
-	import Footer from '$lib/components/Footer.svelte';
+	import "../app.css";
+	import { onMount } from "svelte";
+	import Navigation from "$lib/components/Navigation.svelte";
+	import Footer from "$lib/components/Footer.svelte";
+
+	// Suppress unknown prop warning
+	export let params: any = {};
 
 	// Initialize GSAP plugins (client-side only)
 	let gsap: any;
 	let ScrollTrigger: any;
 
 	onMount(async () => {
-		if (typeof window !== 'undefined') {
+		if (typeof window !== "undefined") {
 			// Force dark mode - remove light class and set dark
-			document.documentElement.classList.remove('light');
-			document.documentElement.classList.add('dark');
-			localStorage.setItem('theme', 'dark');
+			document.documentElement.classList.remove("light");
+			document.documentElement.classList.add("dark");
+			localStorage.setItem("theme", "dark");
 
 			// Dynamically import GSAP only on client-side
-			const gsapModule = await import('gsap');
-			const scrollTriggerModule = await import('gsap/ScrollTrigger');
+			const gsapModule = await import("gsap");
+			const scrollTriggerModule = await import("gsap/ScrollTrigger");
 			gsap = gsapModule.gsap;
 			ScrollTrigger = scrollTriggerModule.ScrollTrigger;
 			gsap.registerPlugin(ScrollTrigger);
@@ -25,12 +28,17 @@
 	});
 
 	// Cursor follower effect
-	let particles: Array<{ id: number; x: number; y: number; opacity: number }> = [];
+	let particles: Array<{
+		id: number;
+		x: number;
+		y: number;
+		opacity: number;
+	}> = [];
 	let particleId = 0;
 
 	onMount(() => {
-		if (typeof window === 'undefined') return;
-		
+		if (typeof window === "undefined") return;
+
 		// Create cursor follower particles
 		const handleMouseMove = (e: MouseEvent) => {
 			// Add new particle
@@ -38,7 +46,7 @@
 				id: particleId++,
 				x: e.clientX,
 				y: e.clientY,
-				opacity: 1
+				opacity: 1,
 			};
 
 			particles = [...particles, particle];
@@ -54,10 +62,10 @@
 			}
 		};
 
-		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener("mousemove", handleMouseMove);
 
 		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener("mousemove", handleMouseMove);
 		};
 	});
 
@@ -67,7 +75,10 @@
 
 <svelte:head>
 	<title>Daniel Mawuena | Full Stack Architect</title>
-	<meta name="description" content="Full Stack Developer & Architect building scalable applications with React, TypeScript, Node.js, and modern cloud technologies." />
+	<meta
+		name="description"
+		content="Full Stack Developer & Architect building scalable applications with React, TypeScript, Node.js, and modern cloud technologies."
+	/>
 </svelte:head>
 
 <!-- Skip to main content link for accessibility -->
@@ -110,4 +121,3 @@
 		opacity: 1;
 	}
 </style>
-

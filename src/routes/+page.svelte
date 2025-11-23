@@ -9,6 +9,9 @@
 	import { db } from "$lib/firebase";
 	import emailjs from "@emailjs/browser";
 
+	// Suppress unknown prop warning
+	export let params: any = {};
+
 	// Mode toggle: 'builder' or 'thinker'
 	let mode: "builder" | "thinker" = "builder";
 
@@ -30,6 +33,9 @@
 	let status: "idle" | "submitting" | "success" | "error" = "idle";
 	let feedback = "";
 	let emailCopied = false;
+
+	// Rate limiting state
+	let lastSubmissionTime = 0;
 
 	// Mouse spotlight tracking
 	let mouseX = 0;
@@ -123,6 +129,15 @@
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 
+		// Rate limiting check
+		const now = Date.now();
+		if (now - lastSubmissionTime < 60000) {
+			status = "error";
+			feedback = "Please wait a moment before sending another message.";
+			return;
+		}
+		lastSubmissionTime = now;
+
 		// Honeypot check - silent fail for bots
 		if (form.honeypot !== "") {
 			return;
@@ -184,7 +199,8 @@
 				feedback = "";
 			}, 3000);
 		} catch (error) {
-			console.error("Error submitting form:", error);
+			if (import.meta.env.DEV)
+				console.error("Error submitting form:", error);
 			status = "error";
 			feedback = "Transmission failed. Please try again.";
 		}
@@ -199,7 +215,8 @@
 				emailCopied = false;
 			}, 2000);
 		} catch (error) {
-			console.error("Failed to copy email:", error);
+			if (import.meta.env.DEV)
+				console.error("Failed to copy email:", error);
 		}
 	}
 
@@ -762,6 +779,7 @@
 									src={cert.image}
 									alt={cert.title}
 									class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
+									loading="lazy"
 								/>
 								<!-- Shiny Polish Effect -->
 								<div class="cert-shine"></div>
@@ -799,6 +817,7 @@
 							src="/images/tema-map.png"
 							alt="Tema, Ghana Map"
 							class="w-full h-full object-cover map-tactical-filter"
+							loading="lazy"
 						/>
 					</div>
 					<!-- Status Indicator Overlay -->
@@ -1001,6 +1020,7 @@
 													src={tech.icon}
 													alt={tech.name}
 													class="w-5 h-5 tech-icon"
+													loading="lazy"
 												/>
 											</div>
 											<span

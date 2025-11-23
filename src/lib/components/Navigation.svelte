@@ -74,10 +74,10 @@
 			<a
 				href="#home"
 				on:click={(e) => scrollToSection(e, '#home')}
-				class="text-2xl md:text-3xl font-bold tracking-tight font-sans text-text-heading hover:text-azure transition-colors focus:outline-none focus:ring-2 focus:ring-azure rounded"
+				class="text-2xl md:text-2xl lg:text-3xl font-bold tracking-tight font-sans text-text-heading hover:text-azure transition-colors focus:outline-none focus:ring-2 focus:ring-azure rounded"
 				aria-label="Go to home"
 			>
-				<span class="text-azure">D</span>aniel B<span class="text-azure">u</span>b<span class="text-azure">u</span> Mawuen<span class="text-azure">a</span>
+				<span class="text-azure">D</span>aniel <span class="hidden lg:inline">B<span class="text-azure">u</span>b<span class="text-azure">u</span> </span>Mawuen<span class="text-azure">a</span>
 			</a>
 
 			<!-- Desktop Navigation -->
@@ -160,7 +160,7 @@
 		{#if mobileMenuOpen}
 			<div
 				id="mobile-menu"
-				class="md:hidden py-4 border-t border-zinc-800 animate-slide-down bg-obsidian-base"
+				class="md:hidden py-4 border-t border-zinc-800 animate-slide-down bg-black/95 backdrop-blur-xl"
 				role="menu"
 			>
 				{#each navLinks as link}

@@ -4,16 +4,31 @@
 	import type { Project } from '$lib/stores/projects';
 	import { experiences, certifications } from '$lib/stores/experience';
 	import type { WorkExperience, Certification } from '$lib/stores/experience';
+	import { z } from 'zod';
+	import { addDoc, collection } from 'firebase/firestore';
+	import { db } from '$lib/firebase';
+	import emailjs from '@emailjs/browser';
 
 	// Mode toggle: 'builder' or 'thinker'
 	let mode: 'builder' | 'thinker' = 'builder';
 
+	// Contact form validation schema
+	const contactSchema = z.object({
+		name: z.string().min(2, 'Name must be at least 2 characters'),
+		email: z.string().email('Invalid email address'),
+		message: z.string().min(10, 'Message must be at least 10 characters'),
+		honeypot: z.string().max(0, 'Bot detected')
+	});
+
 	// Contact form state
-	let name = '';
-	let email = '';
-	let message = '';
-	let isSubmitting = false;
-	let submitStatus: 'idle' | 'success' | 'error' = 'idle';
+	let form = {
+		name: '',
+		email: '',
+		message: '',
+		honeypot: ''
+	};
+	let status: 'idle' | 'submitting' | 'success' | 'error' = 'idle';
+	let feedback = '';
 	let emailCopied = false;
 
 	// Mouse spotlight tracking
@@ -105,34 +120,69 @@
 	// Handle contact form submission
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		isSubmitting = true;
-		submitStatus = 'idle';
+		
+		// Honeypot check - silent fail for bots
+		if (form.honeypot !== '') {
+			return;
+		}
+
+		// Validate with Zod
+		const validationResult = contactSchema.safeParse(form);
+		if (!validationResult.success) {
+			status = 'error';
+			feedback = validationResult.error.issues[0]?.message || 'Validation failed';
+			return;
+		}
+
+		// Set loading state
+		status = 'submitting';
+		feedback = '';
 
 		try {
-			const response = await fetch('/api/contact', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ name, email, message })
-			});
+			// Sanitize inputs (basic XSS prevention)
+			const sanitizedData = {
+				name: form.name.trim().replace(/[<>]/g, ''),
+				email: form.email.trim().replace(/[<>]/g, ''),
+				message: form.message.trim().replace(/[<>]/g, ''),
+				timestamp: new Date()
+			};
 
-			if (response.ok) {
-				submitStatus = 'success';
-				name = '';
-				email = '';
-				message = '';
-				setTimeout(() => {
-					submitStatus = 'idle';
-				}, 3000);
-			} else {
-				submitStatus = 'error';
-			}
+			// Firestore backup
+			await addDoc(collection(db, 'messages'), sanitizedData);
+
+			// EmailJS send
+			await emailjs.send(
+				import.meta.env.VITE_EMAILJS_SERVICE_ID,
+				import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+				{
+					name: sanitizedData.name,
+					email: sanitizedData.email,
+					message: sanitizedData.message
+				},
+				import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+			);
+
+			// Success
+			status = 'success';
+			feedback = 'Transmission Sent ✅';
+			
+			// Reset form
+			form = {
+				name: '',
+				email: '',
+				message: '',
+				honeypot: ''
+			};
+
+			// Reset status after 3 seconds
+			setTimeout(() => {
+				status = 'idle';
+				feedback = '';
+			}, 3000);
 		} catch (error) {
 			console.error('Error submitting form:', error);
-			submitStatus = 'error';
-		} finally {
-			isSubmitting = false;
+			status = 'error';
+			feedback = 'Transmission failed. Please try again.';
 		}
 	}
 
@@ -299,18 +349,18 @@
 
 <!-- Hero Section - Split Layout -->
 <section id="home" class="min-h-screen flex items-center relative overflow-hidden pt-24 md:pt-32">
-	<div class="container mx-auto px-6 md:px-8 max-w-7xl">
-		<div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[80vh]">
+	<div class="container mx-auto px-6 md:px-12 max-w-7xl">
+		<div class="flex flex-col lg:grid lg:grid-cols-2 gap-12 md:gap-10 lg:gap-20 items-center min-h-[80vh] md:min-h-[600px]">
 			<!-- Left Side - Copy -->
-			<div class="hero-content space-y-8">
+			<div class="hero-content space-y-8 text-center md:text-center lg:text-left">
 				<!-- Status Indicator -->
-				<div class="flex items-center gap-3">
+				<div class="flex items-center gap-3 justify-center md:justify-center lg:justify-start">
 					<div class="status-dot"></div>
 					<span class="text-text-body text-sm font-mono">Available for work</span>
 				</div>
 
 				<!-- Main Headline with Glowing Stroke -->
-				<h1 class="text-5xl md:text-7xl font-bold leading-tight tracking-tight">
+				<h1 class="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
 					<span class="block text-text-heading mb-2">Crafting digital</span>
 					<span class="block text-text-heading mb-2">experiences with</span>
 					<span class="block">
@@ -321,12 +371,12 @@
 			</h1>
 
 				<!-- Subtext -->
-				<p class="text-xl md:text-2xl text-text-body max-w-2xl leading-relaxed">
+				<p class="text-lg md:text-xl lg:text-2xl text-text-body max-w-2xl mx-auto lg:mx-0 leading-relaxed">
 					AWS Certified Full Stack Developer building scalable applications with modern technologies and innovative solutions.
 				</p>
 
 				<!-- CTA Buttons -->
-				<div class="flex flex-col sm:flex-row gap-4">
+				<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
 				<button
 					on:click={() => {
 							const el = document.getElementById('work');
@@ -351,14 +401,14 @@
 			</div>
 
 			<!-- Right Side - Visual with Floating Badges -->
-			<div class="hero-visual relative flex items-center justify-center">
+			<div class="hero-visual relative flex items-center justify-center order-first lg:order-none">
 				<!-- Profile Image Container -->
-				<div class="relative">
+				<div class="relative w-full md:w-[80%] md:max-w-[500px] lg:w-full lg:max-w-none mx-auto">
 					<!-- Depth Lighting - Rim Light -->
 					<div class="absolute w-[600px] h-[600px] bg-gradient-radial-blue blur-[100px] -z-10 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
 
 					<!-- Profile Image with Gradient Mask -->
-					<div class="relative w-full aspect-square max-w-[560px] mx-auto" style="transform: scale(1.4); mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);">
+					<div class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100" style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);">
 						<img 
 							src="/images/profile-cutout.png" 
 							alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
@@ -368,29 +418,29 @@
 						/>
 					</div>
 
-					<!-- Floating Tech Badges - Glassmorphic, Tightened Positions -->
-					<div class="absolute top-8 -left-6 floating-badge badge-float-1">
+					<!-- Floating Tech Badges - Repositioned for mobile/tablet, original positions for desktop -->
+					<div class="absolute top-[10%] left-[5%] lg:top-8 lg:-left-6 floating-badge badge-float-1 scale-75 lg:scale-100">
 						<div class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2">
 							<div class="w-2 h-2 rounded-full bg-[#61DAFB]"></div>
 							<span class="text-text-heading font-mono text-sm font-semibold">React</span>
 						</div>
 					</div>
 
-					<div class="absolute top-1/4 -right-6 floating-badge badge-float-2">
+					<div class="absolute top-[15%] right-[5%] lg:top-1/4 lg:-right-6 floating-badge badge-float-2 scale-75 lg:scale-100">
 						<div class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2">
 							<div class="w-2 h-2 rounded-full bg-[#FF9900]"></div>
 							<span class="text-text-heading font-mono text-sm font-semibold">AWS</span>
 						</div>
 					</div>
 
-					<div class="absolute top-1/3 -left-6 floating-badge badge-float-3">
+					<div class="absolute bottom-[20%] left-[5%] lg:top-1/3 lg:-left-6 floating-badge badge-float-3 scale-75 lg:scale-100">
 						<div class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2">
 							<div class="w-2 h-2 rounded-full bg-[#38BDF8]"></div>
 							<span class="text-text-heading font-mono text-sm font-semibold">Tailwind</span>
 						</div>
 					</div>
 
-					<div class="absolute bottom-1/4 -right-6 floating-badge badge-float-4">
+					<div class="absolute bottom-[25%] right-[5%] lg:bottom-1/4 lg:-right-6 floating-badge badge-float-4 scale-75 lg:scale-100">
 						<div class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2">
 							<div class="w-2 h-2 rounded-full bg-[#FFCA28]"></div>
 							<span class="text-text-heading font-mono text-sm font-semibold">Firebase</span>
@@ -428,9 +478,9 @@
 			</div>
 
 		<!-- Bento Grid - Fixed CSS Grid Layout (Aceternity UI Style) -->
-		<div class="bento-grid-fixed h-[600px] w-full grid grid-cols-4 grid-rows-3 gap-4">
+		<div class="bento-grid-fixed h-auto md:h-auto lg:h-[600px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:grid-rows-auto lg:grid-rows-3 gap-6 md:gap-4">
 			<!-- Slot 1: UX Architect (Large Square - col-span-2 row-span-2) -->
-			<div class="col-span-2 row-span-2 bg-neutral-900/50 border border-white/10 rounded-xl p-6 overflow-hidden relative group">
+			<div class="md:col-span-2 lg:col-span-2 lg:row-span-2 h-[400px] md:h-auto lg:h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-6 overflow-hidden relative group">
 				{#key mode}
 					{#if mode === 'builder'}
 						<!-- Builder Mode: UX Architect with Background Image -->
@@ -503,15 +553,15 @@
 			</div>
 
 			<!-- Slot 2: Certifications (Tall Vertical - col-span-1 row-span-2) -->
-			<div class="col-span-1 row-span-2 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
+			<div class="md:col-span-2 lg:col-span-1 lg:row-span-2 h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
 				<h3 class="text-lg font-bold text-text-heading mb-3">Certifications</h3>
-				<div class="space-y-2 overflow-y-auto h-full pr-2">
+				<div class="flex flex-col md:flex-col gap-4 md:gap-2 overflow-y-auto md:overflow-y-auto h-auto md:h-full pb-2 md:pb-0 md:pr-2 scrollbar-hide">
 					{#each certifications as cert}
 						<a
 							href={cert.link}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group cert-shine-container"
+							class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group cert-shine-container w-full md:w-auto"
 						>
 							<div class="w-12 h-12 rounded bg-zinc-800/50 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
 								<img 
@@ -533,7 +583,7 @@
 			</div>
 
 			<!-- Slot 3: Status Map + Vibe Check Container (col-span-1 row-span-2, matches Certifications height) -->
-			<div class="col-span-1 row-span-2 flex flex-col gap-4">
+			<div class="md:col-span-1 lg:col-span-1 lg:row-span-2 flex flex-col gap-4">
 				<!-- Status Map (Top) -->
 				<div class="flex-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden relative group">
 					<div class="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity">
@@ -644,9 +694,15 @@
 			</div>
 
 			<!-- Slot 4: Tech Stack / Philosophy (Wide Rectangle - col-span-2 row-span-1) -->
-			<div class="col-span-2 row-span-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
+			<div class="md:col-span-2 lg:col-span-2 lg:row-span-1 h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
 				{#key mode}
-					{#if mode === 'builder'}
+					{#if mode === 'thinker'}
+						<!-- Thinker Mode: Philosophy -->
+						<h3 class="text-lg font-bold text-text-heading mb-3">Philosophy</h3>
+						<p class="text-text-body text-sm leading-relaxed text-justify">
+							Code is more than just a tool — it's a bridge that connects people, ideas, and solutions. Whether I'm simplifying crypto payments or guiding someone through their daily challenges, I build software that solves real human problems. At the heart of it all, it's never about money or fame; it's about using technology to make life better for others and help humanity move forward.
+						</p>
+					{:else}
 						<!-- Builder Mode: Tech Stack Double Marquee -->
 						<div class="flex items-center justify-between mb-3">
 							<h3 class="text-lg font-bold text-text-heading">Tech Stack</h3>
@@ -722,18 +778,12 @@
 								</div>
 							</div>
 						</div>
-					{:else}
-						<!-- Thinker Mode: Philosophy -->
-						<h3 class="text-lg font-bold text-text-heading mb-3">Philosophy</h3>
-						<p class="text-text-body text-sm leading-relaxed">
-							Code is more than just a tool — it's a bridge that connects people, ideas, and solutions. Whether I'm simplifying crypto payments or guiding someone through their daily challenges, I build software that solves real human problems. At the heart of it all, it's never about money or fame; it's about using technology to make life better for others and help humanity move forward.
-						</p>
 					{/if}
 				{/key}
 			</div>
 
 			<!-- Slot 5: Beyond Code (Small Square - col-span-1 row-span-1) -->
-			<div class="col-span-1 row-span-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
+			<div class="md:col-span-1 lg:col-span-1 lg:row-span-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden">
 				<h3 class="text-lg font-bold text-text-heading mb-2">Beyond Code</h3>
 				<div class="space-y-1.5">
 					<div class="flex items-center gap-1.5">
@@ -760,7 +810,7 @@
 			</div>
 			
 			<!-- Slot 7: Project Carousel (Small Square - col-span-1 row-span-1, next to Beyond Code) -->
-			<div class="col-span-1 row-span-1 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden relative group">
+			<div class="md:col-span-1 lg:col-span-1 lg:row-span-1 min-h-[180px] md:min-h-0 bg-neutral-900/50 border border-white/10 rounded-xl p-4 overflow-hidden relative group">
 				<!-- Trend Line Background -->
 				<div class="absolute inset-0 opacity-10">
 					<svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -821,7 +871,7 @@
 			<!-- Circuit Timeline Line - Gradient Beam -->
 			<div class="absolute left-0 md:left-[15%] top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-transparent opacity-60"></div>
 
-			<div class="space-y-12 pl-8 md:pl-[20%]">
+			<div class="space-y-12 pl-12 md:pl-[20%]">
 					{#each experiences as experience, index (experience.id)}
 					{@const isLeadership = experience.position === 'Technical Project Lead'}
 					<div class="relative reveal experience-item group">
@@ -962,14 +1012,25 @@
 			<div class="reveal">
 				<div class="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-8">
 			<form on:submit={handleSubmit} class="space-y-6">
+				<!-- Honeypot field - hidden from users -->
+				<input
+					type="text"
+					name="company_role"
+					class="hidden absolute opacity-0 -z-50"
+					bind:value={form.honeypot}
+					tabindex="-1"
+					autocomplete="off"
+				/>
+
 				<div>
 							<label for="name" class="block text-sm font-mono text-text-muted mb-2 uppercase tracking-wider">Name</label>
 					<input
 						type="text"
 						id="name"
-						bind:value={name}
+						bind:value={form.name}
 						required
-								class="w-full px-4 py-3 bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input"
+						disabled={status === 'submitting'}
+								class="w-full px-4 h-12 md:py-3 md:h-auto bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
 								placeholder="Enter your name"
 					/>
 				</div>
@@ -979,9 +1040,10 @@
 					<input
 						type="email"
 						id="email"
-						bind:value={email}
+						bind:value={form.email}
 						required
-								class="w-full px-4 py-3 bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input"
+						disabled={status === 'submitting'}
+								class="w-full px-4 h-12 md:py-3 md:h-auto bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
 						placeholder="your.email@example.com"
 					/>
 				</div>
@@ -990,30 +1052,31 @@
 							<label for="message" class="block text-sm font-mono text-text-muted mb-2 uppercase tracking-wider">Message</label>
 					<textarea
 						id="message"
-						bind:value={message}
+						bind:value={form.message}
 						required
 						rows="6"
-								class="w-full px-4 py-3 bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading resize-none transition-all terminal-input"
+						disabled={status === 'submitting'}
+								class="w-full px-4 py-3 min-h-[120px] md:min-h-0 bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading resize-none transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
 								placeholder="Type your message here..."
 					></textarea>
 				</div>
 
-				{#if submitStatus === 'success'}
+				{#if status === 'success'}
 							<div class="p-4 bg-green-900/30 border border-green-500 rounded-lg text-green-400 font-mono text-sm">
-								✓ Transmission successful! I'll get back to you soon.
+								{feedback || "✓ Transmission successful! I'll get back to you soon."}
 					</div>
-				{:else if submitStatus === 'error'}
+				{:else if status === 'error'}
 							<div class="p-4 bg-red-900/30 border border-red-500 rounded-lg text-red-400 font-mono text-sm">
-								✗ Transmission failed. Please try again.
+								{feedback || "✗ Transmission failed. Please try again."}
 					</div>
 				{/if}
 
 				<button
 					type="submit"
-					disabled={isSubmitting}
+					disabled={status === 'submitting'}
 							class="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-semibold hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
 				>
-					{#if isSubmitting}
+					{#if status === 'submitting'}
 						<span class="inline-flex items-center gap-2">
 									<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 										<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

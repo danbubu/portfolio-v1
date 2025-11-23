@@ -9,8 +9,9 @@
 
   body {
     background: #050505 !important;
-    color: #A1A1AA;
-    font-family: "Geist Sans", "Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", sans-serif;
+    color: #a1a1aa;
+    font-family: "Geist Sans", "Inter", "-apple-system", "BlinkMacSystemFont",
+      "system-ui", sans-serif;
     letter-spacing: -0.01em;
     antialiased: true;
   }
@@ -19,7 +20,12 @@
     scroll-behavior: smooth;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-text-heading;
     letter-spacing: -0.02em;
   }
@@ -46,7 +52,7 @@
   }
 
   .spotlight-border::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -1px;
     border-radius: inherit;
@@ -56,7 +62,8 @@
       rgba(37, 99, 235, 0.3) 0%,
       transparent 50%
     );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
@@ -128,28 +135,28 @@
     gap: 1rem;
     position: relative;
   }
-  
+
   /* Tech Stack Marquee Animation - Double Row */
   .tech-marquee-container {
     width: 100%;
     overflow: hidden;
     position: relative;
   }
-  
+
   .tech-marquee-left {
     display: flex;
     animation: marquee-left 25s linear infinite;
     width: fit-content;
     will-change: transform;
   }
-  
+
   .tech-marquee-right {
     display: flex;
     animation: marquee-right 30s linear infinite;
     width: fit-content;
     will-change: transform;
   }
-  
+
   @keyframes marquee-left {
     0% {
       transform: translateX(0);
@@ -158,7 +165,7 @@
       transform: translateX(-50%);
     }
   }
-  
+
   @keyframes marquee-right {
     0% {
       transform: translateX(-50%);
@@ -167,7 +174,7 @@
       transform: translateX(0);
     }
   }
-  
+
   .tech-marquee-left:hover,
   .tech-marquee-right:hover {
     animation-play-state: paused;
@@ -183,37 +190,50 @@
     filter: grayscale(100%) opacity(0.6);
     transition: filter 0.3s ease;
   }
-  
+
   .tech-item:hover .tech-icon {
     filter: grayscale(0%) opacity(1);
   }
-  
+
   /* Waveform Animation for Vibe Check */
   .waveform-bar {
     animation: waveform 1.5s ease-in-out infinite;
   }
-  
+
   @keyframes waveform {
-    0%, 100% {
+    0%,
+    100% {
       transform: scaleY(0.3);
     }
     50% {
       transform: scaleY(1);
     }
   }
-  
+
   /* Playlist Vertical Marquee Animation */
   .playlist-marquee-container {
     position: relative;
-    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 15%,
+      black 85%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 15%,
+      black 85%,
+      transparent 100%
+    );
   }
-  
+
   .playlist-marquee {
     animation: playlist-vertical-marquee 20s linear infinite;
     will-change: transform;
   }
-  
+
   @keyframes playlist-vertical-marquee {
     0% {
       transform: translateY(0);
@@ -222,24 +242,24 @@
       transform: translateY(-50%);
     }
   }
-  
+
   .playlist-marquee:hover {
     animation-play-state: paused;
   }
-  
+
   .playlist-item {
     transition: transform 0.2s ease;
   }
-  
+
   .playlist-item:hover {
     transform: translateX(4px);
   }
-  
+
   /* Project Carousel */
   .carousel-container {
     min-height: 60px;
   }
-  
+
   .carousel-slide {
     transition: opacity 0.5s ease-in-out;
   }
@@ -277,18 +297,30 @@
   /* Thinker Mode Pattern Background */
   .thinker-pattern-bg {
     position: relative;
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 0
+    );
     background-size: 20px 20px;
   }
 
   .thinker-pattern-bg::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    background-image: 
-      linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.03) 50%, transparent 100%),
-      linear-gradient(0deg, transparent 0%, rgba(37, 99, 235, 0.03) 50%, transparent 100%);
+    background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(37, 99, 235, 0.03) 50%,
+        transparent 100%
+      ),
+      linear-gradient(
+        0deg,
+        transparent 0%,
+        rgba(37, 99, 235, 0.03) 50%,
+        transparent 100%
+      );
     background-size: 40px 40px;
     opacity: 0.1;
     pointer-events: none;
@@ -352,13 +384,21 @@
   /* Code Snippet Style */
   .code-snippet {
     @apply bg-obsidian-base border border-zinc-800 rounded-lg p-2 font-mono;
-    background: linear-gradient(135deg, rgba(5, 5, 5, 0.9) 0%, rgba(17, 17, 17, 0.9) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(5, 5, 5, 0.9) 0%,
+      rgba(17, 17, 17, 0.9) 100%
+    );
   }
-  
+
   /* Code Snippet Hover Effect */
   .code-snippet-hover {
     @apply bg-obsidian-base border border-zinc-800 rounded-lg p-3 font-mono;
-    background: linear-gradient(135deg, rgba(5, 5, 5, 0.95) 0%, rgba(17, 17, 17, 0.95) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(5, 5, 5, 0.95) 0%,
+      rgba(17, 17, 17, 0.95) 100%
+    );
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
@@ -393,7 +433,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563EB;
+  background: #2563eb;
 }
 
 /* Scrollbar - Dark Mode Only */
@@ -443,4 +483,14 @@
   overflow: visible;
   clip: auto;
   white-space: normal;
+}
+
+/* Mobile Scrollbar Hide for Certifications */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

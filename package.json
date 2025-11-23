@@ -25,9 +25,11 @@
   },
   "type": "module",
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@motionone/svelte": "^10.16.4",
     "firebase": "^12.6.0",
     "gsap": "^3.12.2",
-    "motion": "^12.23.24"
+    "motion": "^12.23.24",
+    "zod": "^4.1.12"
   }
 }

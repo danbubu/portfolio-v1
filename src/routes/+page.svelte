@@ -8,9 +8,10 @@
 	import { addDoc, collection } from "firebase/firestore";
 	import { db } from "$lib/firebase";
 	import emailjs from "@emailjs/browser";
+	import OrbitingTechBadges from "$lib/components/OrbitingTechBadges.svelte";
 
 	// Suppress unknown prop warning
-	export let params: any = {};
+	//export let params: any = {};
 
 	// Mode toggle: 'builder' or 'thinker'
 	let mode: "builder" | "thinker" = "builder";
@@ -220,13 +221,6 @@
 		}
 	}
 
-	// Core tech stack for floating badges
-	const coreTech = [
-		{ name: "React", color: "#61DAFB" },
-		{ name: "AWS", color: "#FF9900" },
-		{ name: "Tailwind", color: "#38BDF8" },
-	];
-
 	// Mouse tracking for spotlight
 	function handleMouseMove(e: MouseEvent) {
 		if (isTouchDevice) return;
@@ -302,8 +296,6 @@
 				ease: "power3.out",
 				delay: 0.4,
 			});
-
-			// Floating badges animation - Now handled by CSS keyframes
 
 			// Scroll reveal animations
 			gsap.utils.toArray(".reveal").forEach((element: any) => {
@@ -390,7 +382,7 @@
 <!-- Hero Section - Split Layout -->
 <section
 	id="home"
-	class="min-h-screen flex items-center relative overflow-hidden pt-24 md:pt-32"
+	class="min-h-screen flex items-center relative overflow-x-clip pt-24 md:pt-32"
 >
 	<div class="container mx-auto px-6 md:px-12 max-w-7xl">
 		<div
@@ -479,97 +471,34 @@
 				</div>
 			</div>
 
-			<!-- Right Side - Visual with Floating Badges -->
+			<!-- Right Side - Visual with orbiting tech badges -->
 			<div
-				class="hero-visual relative flex items-center justify-center order-first lg:order-none"
+				class="hero-visual relative flex items-center justify-center order-first lg:order-none overflow-visible lg:overflow-visible"
 			>
-				<!-- Profile Image Container -->
+				<!-- Extra horizontal room on laptop/desktop so the ring isn't clipped by the column -->
 				<div
-					class="relative w-full md:w-[80%] md:max-w-[500px] lg:w-full lg:max-w-none mx-auto"
+					class="relative w-full md:w-[80%] md:max-w-[500px] lg:w-full lg:max-w-none mx-auto overflow-visible lg:-mx-10 xl:-mx-14"
 				>
 					<!-- Depth Lighting - Rim Light -->
 					<div
 						class="absolute w-[600px] h-[600px] bg-gradient-radial-blue blur-[100px] -z-10 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
 					></div>
 
-					<!-- Profile Image with Gradient Mask -->
-					<div
-						class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100"
-						style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);"
-					>
-						<img
-							src="/images/profile-cutout.png"
-							alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
-							class="w-full h-full object-contain relative z-0"
-							loading="eager"
-							decoding="async"
-						/>
-					</div>
-
-					<!-- Floating Tech Badges - Repositioned for mobile/tablet, original positions for desktop -->
-					<div
-						class="absolute top-[10%] left-[5%] lg:top-8 lg:-left-6 floating-badge badge-float-1 scale-75 lg:scale-100"
-					>
+					<OrbitingTechBadges>
+						<!-- Profile Image with Gradient Mask (planet — does not rotate) -->
 						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
+							class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100"
+							style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);"
 						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#61DAFB]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>React</span
-							>
+							<img
+								src="/images/profile-cutout.png"
+								alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
+								class="w-full h-full object-contain relative z-0"
+								loading="eager"
+								decoding="async"
+							/>
 						</div>
-					</div>
-
-					<div
-						class="absolute top-[15%] right-[5%] lg:top-1/4 lg:-right-6 floating-badge badge-float-2 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#FF9900]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>AWS</span
-							>
-						</div>
-					</div>
-
-					<div
-						class="absolute bottom-[20%] left-[5%] lg:top-1/3 lg:-left-6 floating-badge badge-float-3 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#38BDF8]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>Tailwind</span
-							>
-						</div>
-					</div>
-
-					<div
-						class="absolute bottom-[25%] right-[5%] lg:bottom-1/4 lg:-right-6 floating-badge badge-float-4 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#FFCA28]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>Firebase</span
-							>
-						</div>
-					</div>
+					</OrbitingTechBadges>
 				</div>
 			</div>
 		</div>
@@ -1402,7 +1331,7 @@
 						Connect
 					</div>
 					<a
-						href="https://www.linkedin.com/in/daniel-bubu-mawuena-833b3331b/"
+						href="https://www.linkedin.com/in/daniel-mawuena-833b3331b/"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-blue-500/50 hover:bg-blue-500/10 transition-all"
@@ -1702,33 +1631,6 @@
 		background: rgba(255, 255, 255, 0.1);
 		transform: translateY(-2px);
 		box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-	}
-
-	/* Floating Badge Animations - Zero Gravity Effect */
-	@keyframes float {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		50% {
-			transform: translateY(-10px);
-		}
-	}
-
-	.badge-float-1 {
-		animation: float 6s ease-in-out infinite;
-	}
-
-	.badge-float-2 {
-		animation: float 7s ease-in-out infinite;
-	}
-
-	.badge-float-3 {
-		animation: float 5s ease-in-out infinite;
-	}
-
-	.badge-float-4 {
-		animation: float 8s ease-in-out infinite;
 	}
 
 	/* Slow Pulse Animations */

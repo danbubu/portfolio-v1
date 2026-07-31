@@ -1,17 +1,36 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import {
+		buildScrambleState,
+		createHoverScramble,
+		runScrambleDecode,
+		settleScrambleState,
+		type HoverScrambleController,
+		type ScrambleCharState
+	} from '$lib/utils/scramble';
 
 	let scrolled = false;
 	let mobileMenuOpen = false;
 	let activeSection = 'home';
+	let decodeComplete = false;
+	/** Hide final name until the decode sequence actually starts (avoids white-name flash). */
+	let brandAnimating = false;
+	/** Fine-pointer hover scramble — only after decode, never on touch/reduced-motion. */
+	let hoverScrambleEnabled = false;
+	let hoverScramble: HoverScrambleController | undefined;
+	let hoveredCharIndex: number | null = null;
 
-	onMount(() => {
-		// Force dark mode - remove any light mode class
-		if (typeof window !== 'undefined') {
-			document.documentElement.classList.remove('light');
-			localStorage.setItem('theme', 'dark');
-		}
-	});
+	// "Daniel Bubu Mawuena" — Bubu stays lg-only so mobile layout doesn't overflow.
+	// Accents match the previous brand highlights: D, both u's in Bubu, final a.
+	const nameParts = [
+		{ text: 'Daniel ', accentOffsets: [0] },
+		{ text: 'Bubu ', wrapper: 'hidden lg:inline', accentOffsets: [1, 3] },
+		{ text: 'Mawuena', accentOffsets: [6] }
+	];
+
+	const DECODE_DELAY_MS = 1500;
+
+	let brandChars: ScrambleCharState[] = buildScrambleState(nameParts);
 
 	const navLinks = [
 		{ id: 'home', label: 'Home', href: '#home' },
@@ -24,7 +43,6 @@
 		if (typeof window === 'undefined') return;
 		scrolled = window.scrollY > 50;
 
-		// Update active section based on scroll position
 		const sections = ['home', 'work', 'experience', 'contact'];
 		const scrollPosition = window.scrollY + 100;
 
@@ -51,13 +69,83 @@
 		mobileMenuOpen = !mobileMenuOpen;
 	}
 
+	function enableHoverScramble() {
+		if (!hoverScrambleEnabled || hoverScramble) return;
+		hoverScramble = createHoverScramble(
+			() => brandChars,
+			(next) => {
+				brandChars = next;
+				hoveredCharIndex = hoverScramble?.activeIndex ?? null;
+			},
+			48
+		);
+	}
+
+	function onBrandCharEnter(index: number) {
+		if (!decodeComplete || !hoverScrambleEnabled) return;
+		enableHoverScramble();
+		// Paint emphasis first so letter-to-letter moves never flash accent blues.
+		hoveredCharIndex = index;
+		hoverScramble?.enter(index);
+	}
+
+	function onBrandCharLeave() {
+		hoverScramble?.leave();
+		// Defer clear so an immediate enter on the next glyph wins the same event turn.
+		queueMicrotask(() => {
+			hoveredCharIndex = hoverScramble?.activeIndex ?? null;
+		});
+	}
+
 	onMount(() => {
 		if (typeof window === 'undefined') return;
+
+		document.documentElement.classList.remove('light');
+		localStorage.setItem('theme', 'dark');
+
 		window.addEventListener('scroll', handleScroll);
 		handleScroll();
 
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+		hoverScrambleEnabled = !prefersReducedMotion && finePointer;
+
+		let cancelScramble: (() => void) | undefined;
+		let delayTimer: ReturnType<typeof setTimeout> | undefined;
+
+		if (prefersReducedMotion) {
+			brandChars = settleScrambleState(buildScrambleState(nameParts));
+			brandAnimating = true;
+			decodeComplete = true;
+		} else {
+			// Beat of silence, then the decode — never flash the settled white name first.
+			delayTimer = setTimeout(() => {
+				const initial = buildScrambleState(nameParts);
+				brandChars = initial;
+				brandAnimating = true;
+
+				// ~5s total so the decode is easy to follow ((letters - 1) × stagger + cycle)
+				cancelScramble = runScrambleDecode(initial, {
+					staggerMs: 280,
+					cycleMs: 520,
+					tickMs: 48,
+					onFrame: (next) => {
+						brandChars = next;
+					},
+					onComplete: () => {
+						decodeComplete = true;
+					}
+				});
+			}, DECODE_DELAY_MS);
+		}
+
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
+			if (delayTimer) clearTimeout(delayTimer);
+			cancelScramble?.();
+			hoverScramble?.destroy();
+			hoverScramble = undefined;
+			hoveredCharIndex = null;
 		};
 	});
 </script>
@@ -74,10 +162,41 @@
 			<a
 				href="#home"
 				on:click={(e) => scrollToSection(e, '#home')}
-				class="text-2xl md:text-2xl lg:text-3xl font-bold tracking-tight font-sans text-text-heading hover:text-azure transition-colors focus:outline-none focus:ring-2 focus:ring-azure rounded"
-				aria-label="Go to home"
+				class="text-2xl md:text-2xl lg:text-3xl font-bold tracking-tight font-sans text-text-heading focus:outline-none focus:ring-2 focus:ring-azure rounded"
+				aria-label="Daniel Bubu Mawuena — Go to home"
+				data-testid="nav-brand"
+				data-brand-state={decodeComplete ? 'done' : brandAnimating ? 'decoding' : 'waiting'}
 			>
-				<span class="text-azure">D</span>aniel <span class="hidden lg:inline">B<span class="text-azure">u</span>b<span class="text-azure">u</span> </span>Mawuen<span class="text-azure">a</span>
+				<span
+					aria-hidden="true"
+					class="nav-brand-scramble"
+					on:mouseleave={onBrandCharLeave}
+				>
+					{#if brandAnimating}
+						<!-- Decorative glyphs; name is exposed via the parent link aria-label. -->
+						{#each brandChars as char, i}<!-- svelte-ignore a11y-no-static-element-interactions --><span
+								class="nav-brand-char transition-colors {char.wrapper} {!char.locked ||
+								hoveredCharIndex === i
+									? 'text-azure'
+									: hoveredCharIndex !== null
+										? 'text-text-heading'
+										: decodeComplete && char.accent
+											? 'text-azure'
+											: 'text-text-heading'}"
+								class:is-interactive={decodeComplete &&
+									hoverScrambleEnabled &&
+									!char.isSpace}
+								on:mouseenter={() => onBrandCharEnter(i)}
+								on:mouseleave={onBrandCharLeave}
+								>{char.display}</span
+							>{/each}
+					{:else}
+						<!-- Width-only spacer — no painted glyphs before the decode begins. -->
+						<span
+							class="inline-block h-[1em] w-[11ch] lg:w-[20ch] align-middle"
+						></span>
+					{/if}
+				</span>
 			</a>
 
 			<!-- Desktop Navigation -->
@@ -121,7 +240,6 @@
 				aria-controls="mobile-menu"
 			>
 				{#if mobileMenuOpen}
-					<!-- Close Icon -->
 					<svg
 						class="w-6 h-6"
 						fill="none"
@@ -137,7 +255,6 @@
 						></path>
 					</svg>
 				{:else}
-					<!-- Menu Icon -->
 					<svg
 						class="w-6 h-6"
 						fill="none"
@@ -207,5 +324,12 @@
 	.animate-slide-down {
 		animation: slide-down 0.3s ease-out;
 	}
-</style>
 
+	.nav-brand-char {
+		transition: color 120ms ease-out;
+	}
+
+	.nav-brand-char.is-interactive {
+		cursor: default;
+	}
+</style>

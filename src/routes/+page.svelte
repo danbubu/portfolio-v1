@@ -778,7 +778,8 @@
 							Philosophy
 						</h3>
 						<p
-							class="text-text-body text-sm leading-relaxed text-justify"
+							class="philosophy-copy font-serif text-text-body text-[15px] md:text-base leading-[1.8] tracking-[0.01em] text-justify"
+							data-testid="philosophy-copy"
 						>
 							Code is more than just a tool — it's a bridge that
 							connects people, ideas, and solutions. Whether I'm
@@ -1264,7 +1265,7 @@
 						</svg>
 					</a>
 					<a
-						href="https://www.instagram.com/its_bubuu_/"
+						href="https://www.instagram.com/thatbubuguy/"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-pink-500/50 hover:bg-pink-500/10 transition-all"
@@ -1448,6 +1449,13 @@
 <style>
 	.container {
 		max-width: 1280px;
+	}
+
+	.philosophy-copy {
+		/* Old-style Roman serif — Jenson-adjacent, clean classical vibe */
+		font-family: "EB Garamond", "Palatino Linotype", "Book Antiqua", Palatino, Georgia,
+			serif;
+		font-weight: 400;
 	}
 
 	/* Hero Gradient Text - Cinematic Effect */

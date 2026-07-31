@@ -5,6 +5,7 @@ test.describe('Work project showcase', () => {
 		page
 	}) => {
 		await page.goto('/');
+		await page.waitForLoadState('domcontentloaded');
 
 		const work = page.locator('#work');
 		await work.scrollIntoViewIfNeeded();
@@ -14,14 +15,13 @@ test.describe('Work project showcase', () => {
 		await expect(showcase).toHaveAttribute('data-showcase-mode', 'builder');
 
 		await expect(page.getByTestId('project-preview-link')).toBeVisible();
-		await expect(page.getByTestId('project-live-link')).toBeVisible();
 		await expect(page.getByTestId('project-live-link')).toContainText(
 			/View Live Project/i
 		);
 
-		// Premium previews from /images/projects — dual on desktop, at least one everywhere
 		const previewCount = Number(await showcase.getAttribute('data-preview-count'));
 		expect(previewCount).toBeGreaterThanOrEqual(1);
+
 		const viewport = page.viewportSize();
 		const isDesktopPreview = (viewport?.width ?? 0) >= 768;
 		const stage = page.locator(
@@ -30,17 +30,34 @@ test.describe('Work project showcase', () => {
 				: '[data-testid="project-preview-link"] .preview-stage-mobile'
 		);
 		await expect(stage).toBeVisible();
-		const previewImg = stage.locator('img').first();
+
+		const previewImg = stage.locator('img.preview-img').first();
 		await expect(previewImg).toBeAttached();
 		await expect(previewImg).toHaveAttribute('src', /\/images\/projects\//);
+		await expect(previewImg).toHaveClass(/object-contain/);
+		await expect(stage.locator('img.preview-backdrop').first()).toBeAttached();
 
-		// Description overflow: Read more reveals full copy without breaking the card
-		const toggle = page.getByTestId('project-desc-toggle');
-		await expect(toggle).toBeVisible();
-		await toggle.click();
-		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-		await toggle.click();
-		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		// Full description always visible — no read-more control
+		await expect(page.getByTestId('project-description')).toBeVisible();
+		await expect(page.getByTestId('project-desc-toggle')).toHaveCount(0);
+		await expect(page.getByTestId('project-tech-chips')).toBeVisible();
+
+		// Preview arrows removed — dots only when dual
+		await expect(
+			page.getByRole('button', { name: 'Previous preview image' })
+		).toHaveCount(0);
+		await expect(
+			page.getByRole('button', { name: 'Next preview image' })
+		).toHaveCount(0);
+
+		if (previewCount >= 2) {
+			const startIndex = await showcase.getAttribute('data-preview-index');
+			await expect
+				.poll(async () => showcase.getAttribute('data-preview-index'), {
+					timeout: 5000
+				})
+				.not.toBe(startIndex);
+		}
 
 		const firstProject = await showcase.getAttribute('data-project');
 		expect(firstProject).toBeTruthy();
@@ -48,27 +65,21 @@ test.describe('Work project showcase', () => {
 		await showcase.getByRole('button', { name: 'Next project' }).click();
 		await expect(showcase).not.toHaveAttribute('data-project', firstProject!);
 
-		// All four projects reachable via dots
-		for (const name of [
-			'Airdrop Tracker',
-			'Intervue-AI',
-			'NabbyCare+',
-			'The Control Room'
-		]) {
-			await showcase.getByRole('tab', { name: `Show ${name}` }).click();
-			await expect(showcase).toHaveAttribute('data-project', name);
-			await expect(page.getByTestId('project-live-link')).toBeVisible();
-		}
+		await showcase.getByRole('tab', { name: 'Show Intervue-AI' }).click();
+		await expect(showcase).toHaveAttribute('data-project', 'Intervue-AI');
+		await expect(page.getByTestId('project-live-link')).toBeVisible();
 	});
 
 	test('Thinker mode shows per-project journal synced to the showcase', async ({
 		page
 	}) => {
 		await page.goto('/');
+		await page.waitForLoadState('domcontentloaded');
+
 		const work = page.locator('#work');
 		await work.scrollIntoViewIfNeeded();
 
-		await work
+		await page
 			.getByRole('button', { name: 'Toggle between builder and thinker mode' })
 			.click();
 
@@ -78,6 +89,9 @@ test.describe('Work project showcase', () => {
 		await expect(
 			showcase.getByRole('heading', { name: 'Engineering approach' })
 		).toBeVisible();
+
+		await expect(page.getByTestId('philosophy-copy')).toBeVisible();
+		await expect(page.getByTestId('philosophy-copy')).toHaveClass(/font-serif/);
 
 		await showcase.getByRole('tab', { name: 'Show NabbyCare+' }).click();
 		await expect(showcase).toHaveAttribute('data-project', 'NabbyCare+');

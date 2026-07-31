@@ -64,8 +64,14 @@ test.describe('Portfolio smoke', () => {
 		const experience = page.locator('#experience');
 		await experience.scrollIntoViewIfNeeded();
 		await expect(experience.getByRole('heading', { name: 'Experience' })).toBeVisible();
-		await expect(experience.locator('.experience-item').first()).toBeVisible();
-		await expect(experience.getByText(/Adroit|Intern|Developer|Lead/i).first()).toBeVisible();
+		const firstRole = experience.locator('.experience-item').first();
+		await expect(firstRole).toBeVisible();
+		await expect(firstRole.getByText('RPL Technologies')).toBeVisible();
+		await expect(firstRole.getByText('QA / Frontend Development')).toBeVisible();
+		await expect(firstRole.getByText(/Present/i)).toBeVisible();
+		await expect(firstRole.getByText(/Fidelity Bank Ghana/i)).toBeVisible();
+		await expect(firstRole.getByText(/Kemy/i)).toBeVisible();
+		await expect(experience.getByText(/Adroit|KNUST|Intern|Lead/i).first()).toBeVisible();
 
 		const contact = page.locator('#contact');
 		await contact.scrollIntoViewIfNeeded();

@@ -8,9 +8,11 @@
 	import { addDoc, collection } from "firebase/firestore";
 	import { db } from "$lib/firebase";
 	import emailjs from "@emailjs/browser";
+	import OrbitingTechBadges from "$lib/components/OrbitingTechBadges.svelte";
+	import ProjectShowcase from "$lib/components/ProjectShowcase.svelte";
 
 	// Suppress unknown prop warning
-	export let params: any = {};
+	//export let params: any = {};
 
 	// Mode toggle: 'builder' or 'thinker'
 	let mode: "builder" | "thinker" = "builder";
@@ -46,34 +48,16 @@
 	let scrollProgress = 0;
 	let showBackToTop = false;
 
-	// Project Carousel state
+	// Project Carousel state — derived from the live projects store
 	let currentSlide = 0;
-	const carouselSlides = [
-		{
-			title: "Airdrop Tracker",
-			status: "Live",
-			statusColor: "bg-green-500",
-			metric: "140+ Active Users",
-			subtext: "DeFi Analytics Platform",
-		},
-		{
-			title: "The Control Room",
-			status: "Building",
-			statusColor: "bg-purple-500",
-			metric: "Esports Engine",
-			subtext: "Automated Tournament Command Center",
-		},
-		{
-			title: "InnerFeed",
-			status: "Building",
-			statusColor: "bg-orange-500",
-			metric: "Social Sanctuary",
-			subtext: "Anti-vanity metric blogging platform",
-		},
-	];
-
-	// Ensure proper typing
-	$: typedProjects = $projects as Project[];
+	$: carouselSlides = ($projects as Project[]).map((project) => ({
+		title: project.title,
+		status: project.status,
+		statusColor:
+			project.status === "Live" ? "bg-green-500" : "bg-purple-500",
+		metric: project.metrics || project.category,
+		subtext: project.tagline,
+	}));
 
 	// GSAP and ScrollTrigger
 	let gsap: any;
@@ -220,13 +204,6 @@
 		}
 	}
 
-	// Core tech stack for floating badges
-	const coreTech = [
-		{ name: "React", color: "#61DAFB" },
-		{ name: "AWS", color: "#FF9900" },
-		{ name: "Tailwind", color: "#38BDF8" },
-	];
-
 	// Mouse tracking for spotlight
 	function handleMouseMove(e: MouseEvent) {
 		if (isTouchDevice) return;
@@ -269,7 +246,8 @@
 
 		// Project Carousel auto-play
 		const carouselInterval = setInterval(() => {
-			currentSlide = (currentSlide + 1) % carouselSlides.length;
+			currentSlide =
+				(currentSlide + 1) % Math.max(carouselSlides.length, 1);
 		}, 4000); // 4 seconds per slide
 
 		return () => {
@@ -302,8 +280,6 @@
 				ease: "power3.out",
 				delay: 0.4,
 			});
-
-			// Floating badges animation - Now handled by CSS keyframes
 
 			// Scroll reveal animations
 			gsap.utils.toArray(".reveal").forEach((element: any) => {
@@ -390,7 +366,7 @@
 <!-- Hero Section - Split Layout -->
 <section
 	id="home"
-	class="min-h-screen flex items-center relative overflow-hidden pt-24 md:pt-32"
+	class="min-h-screen flex items-center relative overflow-x-clip pt-24 md:pt-32"
 >
 	<div class="container mx-auto px-6 md:px-12 max-w-7xl">
 		<div
@@ -479,97 +455,34 @@
 				</div>
 			</div>
 
-			<!-- Right Side - Visual with Floating Badges -->
+			<!-- Right Side - Visual with orbiting tech badges -->
 			<div
-				class="hero-visual relative flex items-center justify-center order-first lg:order-none"
+				class="hero-visual relative flex items-center justify-center order-first lg:order-none overflow-visible lg:overflow-visible"
 			>
-				<!-- Profile Image Container -->
+				<!-- Extra horizontal room on laptop/desktop so the ring isn't clipped by the column -->
 				<div
-					class="relative w-full md:w-[80%] md:max-w-[500px] lg:w-full lg:max-w-none mx-auto"
+					class="relative w-full md:w-[80%] md:max-w-[500px] lg:w-full lg:max-w-none mx-auto overflow-visible lg:-mx-10 xl:-mx-14"
 				>
 					<!-- Depth Lighting - Rim Light -->
 					<div
 						class="absolute w-[600px] h-[600px] bg-gradient-radial-blue blur-[100px] -z-10 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
 					></div>
 
-					<!-- Profile Image with Gradient Mask -->
-					<div
-						class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100"
-						style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);"
-					>
-						<img
-							src="/images/profile-cutout.png"
-							alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
-							class="w-full h-full object-contain relative z-0"
-							loading="eager"
-							decoding="async"
-						/>
-					</div>
-
-					<!-- Floating Tech Badges - Repositioned for mobile/tablet, original positions for desktop -->
-					<div
-						class="absolute top-[10%] left-[5%] lg:top-8 lg:-left-6 floating-badge badge-float-1 scale-75 lg:scale-100"
-					>
+					<OrbitingTechBadges>
+						<!-- Profile Image with Gradient Mask (planet — does not rotate) -->
 						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
+							class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100"
+							style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);"
 						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#61DAFB]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>React</span
-							>
+							<img
+								src="/images/profile-cutout.png"
+								alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
+								class="w-full h-full object-contain relative z-0"
+								loading="eager"
+								decoding="async"
+							/>
 						</div>
-					</div>
-
-					<div
-						class="absolute top-[15%] right-[5%] lg:top-1/4 lg:-right-6 floating-badge badge-float-2 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#FF9900]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>AWS</span
-							>
-						</div>
-					</div>
-
-					<div
-						class="absolute bottom-[20%] left-[5%] lg:top-1/3 lg:-left-6 floating-badge badge-float-3 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#38BDF8]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>Tailwind</span
-							>
-						</div>
-					</div>
-
-					<div
-						class="absolute bottom-[25%] right-[5%] lg:bottom-1/4 lg:-right-6 floating-badge badge-float-4 scale-75 lg:scale-100"
-					>
-						<div
-							class="hero-badge-glass px-4 py-3 rounded-lg flex items-center gap-2"
-						>
-							<div
-								class="w-2 h-2 rounded-full bg-[#FFCA28]"
-							></div>
-							<span
-								class="text-text-heading font-mono text-sm font-semibold"
-								>Firebase</span
-							>
-						</div>
-					</div>
+					</OrbitingTechBadges>
 				</div>
 			</div>
 		</div>
@@ -623,136 +536,19 @@
 		<div
 			class="bento-grid-fixed h-auto md:h-auto lg:h-[600px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:grid-rows-auto lg:grid-rows-3 gap-6 md:gap-4"
 		>
-			<!-- Slot 1: UX Architect (Large Square - col-span-2 row-span-2) -->
+			<!-- Slot 1: Multi-project showcase (Large Square - col-span-2 row-span-2) -->
 			<div
-				class="md:col-span-2 lg:col-span-2 lg:row-span-2 h-[400px] md:h-auto lg:h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-6 overflow-hidden relative group"
+				class="md:col-span-2 lg:col-span-2 lg:row-span-2 h-auto min-h-[420px] md:min-h-[480px] lg:min-h-0 lg:h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-5 md:p-6 overflow-hidden relative group"
+				data-testid="featured-project-card"
 			>
-				{#key mode}
-					{#if mode === "builder"}
-						<!-- Builder Mode: UX Architect with Background Image -->
-						<div
-							class="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity"
-						>
-							<div
-								class="w-full h-full bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20"
-							></div>
-						</div>
-						<div
-							class="relative z-10 h-full flex flex-col justify-between"
-						>
-							<div>
-								<div
-									class="flex items-center gap-2 mb-3 flex-wrap"
-								>
-									<span
-										class="pill-badge text-azure border-azure/30 font-bold text-xs px-2 py-1"
-										>Featured</span
-									>
-									<span class="pill-badge text-xs px-2 py-1"
-										>DeFi</span
-									>
-									<span
-										class="pill-badge bg-green-500/20 text-green-400 border-green-500/50 animate-pulse text-xs px-2 py-1"
-									>
-										{typedProjects[0]?.metrics ||
-											"100+ Users"}
-									</span>
-								</div>
-								<h3
-									class="text-2xl font-bold text-text-heading mb-2"
-								>
-									The UX Architect
-								</h3>
-								<p
-									class="text-text-body text-sm leading-relaxed mb-4"
-								>
-									{typedProjects[0]?.description ||
-										"Abstracting DeFi complexity into stress-free UX. The Airdrop Tracker Payment System handles multiple crypto protocols seamlessly."}
-								</p>
-
-								<!-- Code Snippet on Hover (Builder Mode Only) -->
-								<div
-									class="code-snippet-hover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-								>
-									<div class="flex items-center gap-2 mb-2">
-										<div
-											class="w-2 h-2 rounded-full bg-red-500"
-										></div>
-										<div
-											class="w-2 h-2 rounded-full bg-yellow-500"
-										></div>
-										<div
-											class="w-2 h-2 rounded-full bg-green-500"
-										></div>
-										<span
-											class="text-text-muted text-xs ml-2 font-mono"
-											>payment-handler.ts</span
-										>
-									</div>
-									<pre
-										class="text-text-body text-xs font-mono overflow-x-auto"><code
-											>{`async function handleMultiProtocolPayment(
-  protocols: Protocol[]
-): Promise<TransactionResult> {
-  // Abstracting complexity...
-  return unifiedResult;
-}`}</code
-										></pre>
-								</div>
-							</div>
-							<a
-								href={typedProjects[0]?.link ||
-									"https://airdroptracker.app"}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-azure hover:underline text-sm font-mono mt-4 inline-block"
-							>
-								View Live Project →
-							</a>
-						</div>
-					{:else}
-						<!-- Thinker Mode: Engineering Approach -->
-						<div class="relative z-10 h-full flex flex-col">
-							<h3
-								class="text-2xl font-bold text-text-heading mb-3"
-							>
-								Engineering Approach
-							</h3>
-							<p
-								class="text-text-body text-sm leading-relaxed mb-4"
-							>
-								Building solutions that prioritize user
-								experience, performance, and maintainability.
-							</p>
-							<div class="space-y-2">
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>User-Centric Architecture</span
-									>
-								</div>
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>Performance Optimization</span
-									>
-								</div>
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>Scalable Component Systems</span
-									>
-								</div>
-							</div>
-						</div>
-					{/if}
-				{/key}
+				<div
+					class="absolute inset-0 opacity-25 pointer-events-none bg-gradient-to-br from-blue-600/20 via-cyan-600/10 to-transparent"
+				></div>
+				<div class="relative z-10 h-full">
+					{#key mode}
+						<ProjectShowcase {mode} />
+					{/key}
+				</div>
 			</div>
 
 			<!-- Slot 2: Certifications (Tall Vertical - col-span-1 row-span-2) -->
@@ -982,7 +778,8 @@
 							Philosophy
 						</h3>
 						<p
-							class="text-text-body text-sm leading-relaxed text-justify"
+							class="philosophy-copy font-serif text-text-body text-[15px] md:text-base leading-[1.8] tracking-[0.01em] text-justify"
+							data-testid="philosophy-copy"
 						>
 							Code is more than just a tool — it's a bridge that
 							connects people, ideas, and solutions. Whether I'm
@@ -1402,7 +1199,7 @@
 						Connect
 					</div>
 					<a
-						href="https://www.linkedin.com/in/daniel-bubu-mawuena-833b3331b/"
+						href="https://www.linkedin.com/in/daniel-mawuena-833b3331b/"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-blue-500/50 hover:bg-blue-500/10 transition-all"
@@ -1468,7 +1265,7 @@
 						</svg>
 					</a>
 					<a
-						href="https://www.instagram.com/its_bubuu_/"
+						href="https://www.instagram.com/thatbubuguy/"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-pink-500/50 hover:bg-pink-500/10 transition-all"
@@ -1654,6 +1451,13 @@
 		max-width: 1280px;
 	}
 
+	.philosophy-copy {
+		/* Old-style Roman serif — Jenson-adjacent, clean classical vibe */
+		font-family: "EB Garamond", "Palatino Linotype", "Book Antiqua", Palatino, Georgia,
+			serif;
+		font-weight: 400;
+	}
+
 	/* Hero Gradient Text - Cinematic Effect */
 	.hero-gradient-text {
 		background: linear-gradient(to right, #22d3ee 0%, #2563eb 100%);
@@ -1702,33 +1506,6 @@
 		background: rgba(255, 255, 255, 0.1);
 		transform: translateY(-2px);
 		box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-	}
-
-	/* Floating Badge Animations - Zero Gravity Effect */
-	@keyframes float {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		50% {
-			transform: translateY(-10px);
-		}
-	}
-
-	.badge-float-1 {
-		animation: float 6s ease-in-out infinite;
-	}
-
-	.badge-float-2 {
-		animation: float 7s ease-in-out infinite;
-	}
-
-	.badge-float-3 {
-		animation: float 5s ease-in-out infinite;
-	}
-
-	.badge-float-4 {
-		animation: float 8s ease-in-out infinite;
 	}
 
 	/* Slow Pulse Animations */

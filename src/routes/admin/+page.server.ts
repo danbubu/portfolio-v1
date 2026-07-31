@@ -34,13 +34,20 @@ export const actions: Actions = {
     // Mock: In a real application, you would save this to Firestore
     // For example: await addProjectToFirestore({ title, link, techStack });
 
-    // Create new project object
+    // Create new project object (admin form supplies core fields; rest use safe defaults)
     const newProject: Project = {
       id: Date.now().toString(),
       title,
+      tagline: title,
       link,
       techStack,
       description: `A project built with ${techStack}`,
+      status: "Live",
+      category: "Project",
+      previews: ["/images/projects/airdrop-tracker1.png"],
+      inspiration: `Built to solve a real workflow need around ${title}.`,
+      engineeringApproach:
+        "Shipped with a pragmatic stack focused on clarity, performance, and maintainability.",
       addedAt: new Date(),
     };
 

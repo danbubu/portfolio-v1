@@ -3,6 +3,7 @@
 	import { onMount } from "svelte";
 	import Navigation from "$lib/components/Navigation.svelte";
 	import Footer from "$lib/components/Footer.svelte";
+	import AmbientStarfield from "$lib/components/AmbientStarfield.svelte";
 
 	// Suppress unknown prop warning
 	export let params: any = {};
@@ -92,6 +93,9 @@
 <div class="min-h-screen bg-obsidian-base relative">
 	<!-- Global Noise Texture Overlay -->
 	<div class="noise-overlay"></div>
+
+	<!-- Ambient galaxy starfield (behind all content) -->
+	<AmbientStarfield />
 
 	<!-- Aurora Background -->
 	<div class="aurora-bg"></div>

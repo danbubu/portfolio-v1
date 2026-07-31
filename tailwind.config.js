@@ -30,7 +30,14 @@ export default {
           "system-ui",
           "sans-serif",
         ],
-        serif: ["Georgia", "serif"],
+        serif: [
+          "EB Garamond",
+          "Palatino Linotype",
+          "Book Antiqua",
+          "Palatino",
+          "Georgia",
+          "serif",
+        ],
         mono: [
           "JetBrains Mono",
           "Fira Code",

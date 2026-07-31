@@ -20,6 +20,20 @@ export interface Certification {
 
 export const experiences: WorkExperience[] = [
 	{
+		id: 'rpl',
+		company: 'RPL Technologies',
+		position: 'QA / Frontend Development',
+		location: 'Accra, Ghana',
+		startDate: '2026',
+		endDate: null,
+		description: [
+			'QA testing on an Expense Automation solution built for Fidelity Bank Ghana — validating critical workflows and catching regressions before release',
+			'Frontend development on Kemy, shipping responsive UI and interactive product flows with modern React tooling',
+			'Partner with engineering on release quality through clear bug reports, reproducible cases, and polished UI delivery'
+		],
+		technologies: ['QA', 'React', 'Frontend', 'Testing', 'JavaScript', 'Git']
+	},
+	{
 		id: '0',
 		company: 'KNUST (Capstone)',
 		position: 'Technical Project Lead',

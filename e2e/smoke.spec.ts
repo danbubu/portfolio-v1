@@ -45,15 +45,17 @@ test.describe('Portfolio smoke', () => {
 		await work.scrollIntoViewIfNeeded();
 
 		await expect(work.getByRole('heading', { name: 'Work & Credentials' })).toBeVisible();
-		await expect(work.getByText('The UX Architect')).toBeVisible();
-		await expect(work.getByRole('link', { name: /View Live Project/i })).toBeVisible();
+		await expect(page.getByTestId('project-showcase')).toBeVisible();
+		await expect(page.getByTestId('project-live-link')).toBeVisible();
 		await expect(work.getByRole('heading', { name: 'Tech Stack' })).toBeVisible();
 
 		await work.getByRole('button', { name: 'Toggle between builder and thinker mode' }).click();
 
-		await expect(work.getByRole('heading', { name: 'Engineering Approach' })).toBeVisible();
+		const showcase = page.getByTestId('project-showcase');
+		await expect(showcase).toHaveAttribute('data-showcase-mode', 'thinker');
+		await expect(showcase.getByRole('heading', { name: 'Engineering approach' })).toBeVisible();
 		await expect(work.getByRole('heading', { name: 'Philosophy' })).toBeVisible();
-		await expect(work.getByText('The UX Architect')).toHaveCount(0);
+		await expect(page.getByTestId('project-live-link')).toHaveCount(0);
 	});
 
 	test('Experience and Contact surfaces stay intact', async ({ page }) => {

@@ -9,6 +9,7 @@
 	import { db } from "$lib/firebase";
 	import emailjs from "@emailjs/browser";
 	import OrbitingTechBadges from "$lib/components/OrbitingTechBadges.svelte";
+	import ProjectShowcase from "$lib/components/ProjectShowcase.svelte";
 
 	// Suppress unknown prop warning
 	//export let params: any = {};
@@ -47,34 +48,16 @@
 	let scrollProgress = 0;
 	let showBackToTop = false;
 
-	// Project Carousel state
+	// Project Carousel state — derived from the live projects store
 	let currentSlide = 0;
-	const carouselSlides = [
-		{
-			title: "Airdrop Tracker",
-			status: "Live",
-			statusColor: "bg-green-500",
-			metric: "140+ Active Users",
-			subtext: "DeFi Analytics Platform",
-		},
-		{
-			title: "The Control Room",
-			status: "Building",
-			statusColor: "bg-purple-500",
-			metric: "Esports Engine",
-			subtext: "Automated Tournament Command Center",
-		},
-		{
-			title: "InnerFeed",
-			status: "Building",
-			statusColor: "bg-orange-500",
-			metric: "Social Sanctuary",
-			subtext: "Anti-vanity metric blogging platform",
-		},
-	];
-
-	// Ensure proper typing
-	$: typedProjects = $projects as Project[];
+	$: carouselSlides = ($projects as Project[]).map((project) => ({
+		title: project.title,
+		status: project.status,
+		statusColor:
+			project.status === "Live" ? "bg-green-500" : "bg-purple-500",
+		metric: project.metrics || project.category,
+		subtext: project.tagline,
+	}));
 
 	// GSAP and ScrollTrigger
 	let gsap: any;
@@ -263,7 +246,8 @@
 
 		// Project Carousel auto-play
 		const carouselInterval = setInterval(() => {
-			currentSlide = (currentSlide + 1) % carouselSlides.length;
+			currentSlide =
+				(currentSlide + 1) % Math.max(carouselSlides.length, 1);
 		}, 4000); // 4 seconds per slide
 
 		return () => {
@@ -552,136 +536,19 @@
 		<div
 			class="bento-grid-fixed h-auto md:h-auto lg:h-[600px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:grid-rows-auto lg:grid-rows-3 gap-6 md:gap-4"
 		>
-			<!-- Slot 1: UX Architect (Large Square - col-span-2 row-span-2) -->
+			<!-- Slot 1: Multi-project showcase (Large Square - col-span-2 row-span-2) -->
 			<div
-				class="md:col-span-2 lg:col-span-2 lg:row-span-2 h-[400px] md:h-auto lg:h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-6 overflow-hidden relative group"
+				class="md:col-span-2 lg:col-span-2 lg:row-span-2 h-auto min-h-[420px] md:min-h-[480px] lg:min-h-0 lg:h-auto bg-neutral-900/50 border border-white/10 rounded-xl p-5 md:p-6 overflow-hidden relative group"
+				data-testid="featured-project-card"
 			>
-				{#key mode}
-					{#if mode === "builder"}
-						<!-- Builder Mode: UX Architect with Background Image -->
-						<div
-							class="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity"
-						>
-							<div
-								class="w-full h-full bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20"
-							></div>
-						</div>
-						<div
-							class="relative z-10 h-full flex flex-col justify-between"
-						>
-							<div>
-								<div
-									class="flex items-center gap-2 mb-3 flex-wrap"
-								>
-									<span
-										class="pill-badge text-azure border-azure/30 font-bold text-xs px-2 py-1"
-										>Featured</span
-									>
-									<span class="pill-badge text-xs px-2 py-1"
-										>DeFi</span
-									>
-									<span
-										class="pill-badge bg-green-500/20 text-green-400 border-green-500/50 animate-pulse text-xs px-2 py-1"
-									>
-										{typedProjects[0]?.metrics ||
-											"100+ Users"}
-									</span>
-								</div>
-								<h3
-									class="text-2xl font-bold text-text-heading mb-2"
-								>
-									The UX Architect
-								</h3>
-								<p
-									class="text-text-body text-sm leading-relaxed mb-4"
-								>
-									{typedProjects[0]?.description ||
-										"Abstracting DeFi complexity into stress-free UX. The Airdrop Tracker Payment System handles multiple crypto protocols seamlessly."}
-								</p>
-
-								<!-- Code Snippet on Hover (Builder Mode Only) -->
-								<div
-									class="code-snippet-hover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-								>
-									<div class="flex items-center gap-2 mb-2">
-										<div
-											class="w-2 h-2 rounded-full bg-red-500"
-										></div>
-										<div
-											class="w-2 h-2 rounded-full bg-yellow-500"
-										></div>
-										<div
-											class="w-2 h-2 rounded-full bg-green-500"
-										></div>
-										<span
-											class="text-text-muted text-xs ml-2 font-mono"
-											>payment-handler.ts</span
-										>
-									</div>
-									<pre
-										class="text-text-body text-xs font-mono overflow-x-auto"><code
-											>{`async function handleMultiProtocolPayment(
-  protocols: Protocol[]
-): Promise<TransactionResult> {
-  // Abstracting complexity...
-  return unifiedResult;
-}`}</code
-										></pre>
-								</div>
-							</div>
-							<a
-								href={typedProjects[0]?.link ||
-									"https://airdroptracker.app"}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-azure hover:underline text-sm font-mono mt-4 inline-block"
-							>
-								View Live Project →
-							</a>
-						</div>
-					{:else}
-						<!-- Thinker Mode: Engineering Approach -->
-						<div class="relative z-10 h-full flex flex-col">
-							<h3
-								class="text-2xl font-bold text-text-heading mb-3"
-							>
-								Engineering Approach
-							</h3>
-							<p
-								class="text-text-body text-sm leading-relaxed mb-4"
-							>
-								Building solutions that prioritize user
-								experience, performance, and maintainability.
-							</p>
-							<div class="space-y-2">
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>User-Centric Architecture</span
-									>
-								</div>
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>Performance Optimization</span
-									>
-								</div>
-								<div class="flex items-center gap-2">
-									<div
-										class="w-2 h-2 rounded-full bg-azure"
-									></div>
-									<span class="text-text-body text-sm"
-										>Scalable Component Systems</span
-									>
-								</div>
-							</div>
-						</div>
-					{/if}
-				{/key}
+				<div
+					class="absolute inset-0 opacity-25 pointer-events-none bg-gradient-to-br from-blue-600/20 via-cyan-600/10 to-transparent"
+				></div>
+				<div class="relative z-10 h-full">
+					{#key mode}
+						<ProjectShowcase {mode} />
+					{/key}
+				</div>
 			</div>
 
 			<!-- Slot 2: Certifications (Tall Vertical - col-span-1 row-span-2) -->

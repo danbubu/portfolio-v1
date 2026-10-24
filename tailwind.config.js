@@ -17,27 +17,20 @@ export default {
         },
         text: {
           heading: "#EDEDED", // Never pure white for headings
-          body: "#A1A1AA", // Zinc-400 for body text
-          muted: "#71717A", // Zinc-500 for muted text
+          body: "#D4D4D8", // Zinc-300, readable on #050505 and on the cards
+          muted: "#A1A1AA", // Zinc-400, holds 4.5:1 on the card surfaces
         },
       },
       fontFamily: {
         sans: [
-          "Geist Sans",
+          "Inter Variable",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
           "system-ui",
           "sans-serif",
         ],
-        serif: [
-          "EB Garamond",
-          "Palatino Linotype",
-          "Book Antiqua",
-          "Palatino",
-          "Georgia",
-          "serif",
-        ],
+        serif: ["Iowan Old Style", "Palatino Linotype", "Palatino", "Georgia", "serif"],
         mono: [
           "JetBrains Mono",
           "Fira Code",

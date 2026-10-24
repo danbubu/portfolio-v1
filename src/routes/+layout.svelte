@@ -1,127 +1,83 @@
 <script lang="ts">
-	import "../app.css";
-	import { onMount } from "svelte";
-	import Navigation from "$lib/components/Navigation.svelte";
-	import Footer from "$lib/components/Footer.svelte";
-	import AmbientStarfield from "$lib/components/AmbientStarfield.svelte";
+	import '../app.css';
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import AmbientStarfield from '$lib/components/AmbientStarfield.svelte';
+	import { defaultMeta, notFoundMeta, type PageMeta } from '$lib/content/site';
+	import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 
-	// Suppress unknown prop warning
-	export let params: any = {};
-
-	// Initialize GSAP plugins (client-side only)
-	let gsap: any;
-	let ScrollTrigger: any;
-
-	onMount(async () => {
-		if (typeof window !== "undefined") {
-			// Force dark mode - remove light class and set dark
-			document.documentElement.classList.remove("light");
-			document.documentElement.classList.add("dark");
-			localStorage.setItem("theme", "dark");
-
-			// Dynamically import GSAP only on client-side
-			const gsapModule = await import("gsap");
-			const scrollTriggerModule = await import("gsap/ScrollTrigger");
-			gsap = gsapModule.gsap;
-			ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-			gsap.registerPlugin(ScrollTrigger);
-		}
-	});
-
-	// Cursor follower effect
-	let particles: Array<{
-		id: number;
-		x: number;
-		y: number;
-		opacity: number;
-	}> = [];
+	let particles: Array<{ id: number; x: number; y: number }> = [];
 	let particleId = 0;
 
+	$: meta =
+		($page.data.meta as PageMeta | undefined) ??
+		($page.status === 404 ? notFoundMeta : defaultMeta);
+	$: jsonLd = meta.jsonLd ? JSON.stringify(meta.jsonLd).replace(/</g, '\\u003c') : '';
+
 	onMount(() => {
-		if (typeof window === "undefined") return;
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+		if (reduce || !fine) return;
 
-		// Create cursor follower particles
-		const handleMouseMove = (e: MouseEvent) => {
-			// Add new particle
-			const particle = {
-				id: particleId++,
-				x: e.clientX,
-				y: e.clientY,
-				opacity: 1,
-			};
-
-			particles = [...particles, particle];
-
-			// Remove particle after animation
+		let last = 0;
+		const handleMouseMove = (event: MouseEvent) => {
+			const now = performance.now();
+			if (now - last < 80) return;
+			last = now;
+			const particle = { id: particleId++, x: event.clientX, y: event.clientY };
+			particles = [...particles, particle].slice(-8);
 			setTimeout(() => {
-				particles = particles.filter((p) => p.id !== particle.id);
-			}, 1000);
-
-			// Limit particles
-			if (particles.length > 20) {
-				particles = particles.slice(-20);
-			}
+				particles = particles.filter((item) => item.id !== particle.id);
+			}, 700);
 		};
 
-		window.addEventListener("mousemove", handleMouseMove);
-
-		return () => {
-			window.removeEventListener("mousemove", handleMouseMove);
-		};
+		window.addEventListener('mousemove', handleMouseMove);
+		return () => window.removeEventListener('mousemove', handleMouseMove);
 	});
-
-	// Fluid page transitions (removed for SSR compatibility)
-	// Page transitions will be handled by SvelteKit's built-in transitions
 </script>
 
 <svelte:head>
-	<title>Daniel Mawuena | Full Stack Architect</title>
-	<meta
-		name="description"
-		content="Full Stack Developer & Architect building scalable applications with React, TypeScript, Node.js, and modern cloud technologies."
-	/>
+	<link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin="anonymous" />
+	<title>{meta.title}</title>
+	<meta name="description" content={meta.description} />
+	<link rel="canonical" href={meta.canonical} />
+	<meta property="og:title" content={meta.title} />
+	<meta property="og:description" content={meta.ogDescription ?? meta.description} />
+	<meta property="og:url" content={meta.canonical} />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content={meta.image} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content={meta.imageAlt} />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content={meta.title} />
+	<meta name="twitter:description" content={meta.ogDescription ?? meta.description} />
+	<meta name="twitter:image" content={meta.image} />
+	<meta name="twitter:site" content="@thatbubuguy" />
+	{#if jsonLd}
+		{@html `<script type="application/ld+json">${jsonLd}</script>`}
+	{/if}
 </svelte:head>
 
-<!-- Skip to main content link for accessibility -->
 <a
 	href="#main-content"
-	class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent-blue focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue"
+	class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-azure focus:px-4 focus:py-2 focus:text-white focus:outline-none"
 >
 	Skip to main content
 </a>
 
-<div class="min-h-screen bg-obsidian-base relative">
-	<!-- Global Noise Texture Overlay -->
-	<div class="noise-overlay"></div>
-
-	<!-- Ambient galaxy starfield (behind all content) -->
+<div class="relative min-h-screen bg-obsidian-base">
+	<div class="noise-overlay" aria-hidden="true"></div>
 	<AmbientStarfield />
-
-	<!-- Aurora Background -->
-	<div class="aurora-bg"></div>
-
-	<!-- Navigation -->
+	<div class="aurora-bg" aria-hidden="true"></div>
 	<Navigation />
-
-	<!-- Cursor particles -->
 	{#each particles as particle (particle.id)}
-		<div
-			class="cursor-particle"
-			style="left: {particle.x}px; top: {particle.y}px; opacity: {particle.opacity};"
-		></div>
+		<div class="cursor-particle" style="left: {particle.x}px; top: {particle.y}px;"></div>
 	{/each}
-
-	<!-- Main content -->
-	<main id="main-content" class="page-content relative z-10">
+	<main id="main-content" class="relative z-10">
 		<slot />
 	</main>
-
-	<!-- Footer -->
 	<Footer />
 </div>
-
-<style>
-	.page-content {
-		opacity: 1;
-	}
-</style>

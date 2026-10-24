@@ -1,4 +1,4 @@
-# Daniel Mawuena | Digital Artisan Portfolio
+# Daniel Mawuena · Full-Stack Developer & QA Engineer
 
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
@@ -59,7 +59,7 @@ A responsive, layout-aware grid system leveraging Svelte's native reactivity. Ca
 - **Glassmorphic Elements**: Backdrop blur effects for modern UI polish
 
 ### Real-time Integration Ready
-Architecture designed for live API hooks. Contact forms, project metrics, and dynamic content can be seamlessly integrated without structural changes.
+Contact, project notes and the CV are static content with a client-side email form.
 
 ### Performance Optimizations
 - Code splitting at route level
@@ -139,9 +139,9 @@ This portfolio is a personal project. All rights reserved.
 ## Contact
 
 **Daniel Mawuena**  
-Full Stack Architect
+Full-Stack Developer & QA Engineer
 
-- Portfolio: [danielmawuena.com](https://danielmawuena.com)
+- Portfolio: [danielmawuena.me](https://danielmawuena.me)
 - Email: danielmawuena75@gmail.com
 - GitHub: [@danbubu](https://github.com/danbubu)
 

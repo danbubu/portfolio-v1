@@ -1,5 +1,8 @@
 <script lang="ts">
 	import "../app.css";
+	import "@fontsource-variable/inter";
+	import "@fontsource/jetbrains-mono/400.css";
+	import "@fontsource/jetbrains-mono/500.css";
 	import { onMount } from "svelte";
 	import Navigation from "$lib/components/Navigation.svelte";
 	import Footer from "$lib/components/Footer.svelte";
@@ -8,27 +11,6 @@
 	// Suppress unknown prop warning
 	export let params: any = {};
 
-	// Initialize GSAP plugins (client-side only)
-	let gsap: any;
-	let ScrollTrigger: any;
-
-	onMount(async () => {
-		if (typeof window !== "undefined") {
-			// Force dark mode - remove light class and set dark
-			document.documentElement.classList.remove("light");
-			document.documentElement.classList.add("dark");
-			localStorage.setItem("theme", "dark");
-
-			// Dynamically import GSAP only on client-side
-			const gsapModule = await import("gsap");
-			const scrollTriggerModule = await import("gsap/ScrollTrigger");
-			gsap = gsapModule.gsap;
-			ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-			gsap.registerPlugin(ScrollTrigger);
-		}
-	});
-
-	// Cursor follower effect
 	let particles: Array<{
 		id: number;
 		x: number;
@@ -40,9 +22,16 @@
 	onMount(() => {
 		if (typeof window === "undefined") return;
 
-		// Create cursor follower particles
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+		if (reduceMotion || !finePointer) return;
+
+		let last = 0;
 		const handleMouseMove = (e: MouseEvent) => {
-			// Add new particle
+			const now = performance.now();
+			if (now - last < 80) return;
+			last = now;
+
 			const particle = {
 				id: particleId++,
 				x: e.clientX,
@@ -50,17 +39,11 @@
 				opacity: 1,
 			};
 
-			particles = [...particles, particle];
+			particles = [...particles, particle].slice(-8);
 
-			// Remove particle after animation
 			setTimeout(() => {
 				particles = particles.filter((p) => p.id !== particle.id);
-			}, 1000);
-
-			// Limit particles
-			if (particles.length > 20) {
-				particles = particles.slice(-20);
-			}
+			}, 700);
 		};
 
 		window.addEventListener("mousemove", handleMouseMove);
@@ -69,18 +52,7 @@
 			window.removeEventListener("mousemove", handleMouseMove);
 		};
 	});
-
-	// Fluid page transitions (removed for SSR compatibility)
-	// Page transitions will be handled by SvelteKit's built-in transitions
 </script>
-
-<svelte:head>
-	<title>Daniel Mawuena | Full Stack Architect</title>
-	<meta
-		name="description"
-		content="Full Stack Developer & Architect building scalable applications with React, TypeScript, Node.js, and modern cloud technologies."
-	/>
-</svelte:head>
 
 <!-- Skip to main content link for accessibility -->
 <a

@@ -19,6 +19,7 @@
 	let hoverScrambleEnabled = false;
 	let hoverScramble: HoverScrambleController | undefined;
 	let hoveredCharIndex: number | null = null;
+	let theme: 'dark' | 'light' = 'dark';
 
 	// "Daniel Bubu Mawuena" — Bubu stays lg-only so mobile layout doesn't overflow.
 	// Accents match the previous brand highlights: D, both u's in Bubu, final a.
@@ -33,17 +34,18 @@
 	let brandChars: ScrambleCharState[] = buildScrambleState(nameParts);
 
 	const navLinks = [
-		{ id: 'home', label: 'Home', href: '#home' },
-		{ id: 'work', label: 'Work', href: '#work' },
-		{ id: 'experience', label: 'Experience', href: '#experience' },
-		{ id: 'contact', label: 'Contact', href: '#contact' }
+		{ id: 'home', label: 'Home', href: '/#home' },
+		{ id: 'work', label: 'Work', href: '/#work' },
+		{ id: 'experience', label: 'Experience', href: '/#experience' },
+		{ id: 'about', label: 'About', href: '/#about' },
+		{ id: 'contact', label: 'Contact', href: '/#contact' }
 	];
 
 	function handleScroll() {
 		if (typeof window === 'undefined') return;
 		scrolled = window.scrollY > 50;
 
-		const sections = ['home', 'work', 'experience', 'contact'];
+		const sections = ['home', 'work', 'experience', 'about', 'contact'];
 		const scrollPosition = window.scrollY + 100;
 
 		for (const section of sections.reverse()) {
@@ -55,14 +57,23 @@
 		}
 	}
 
-	function scrollToSection(e: Event, href: string) {
-		e.preventDefault();
-		const targetId = href.replace('#', '');
+	function scrollToSection(e: MouseEvent, href: string) {
+		const targetId = href.replace(/^.*#/, '');
 		const element = document.getElementById(targetId);
-		if (element) {
-			element.scrollIntoView({ behavior: 'smooth' });
-			mobileMenuOpen = false;
-		}
+		if (!element) return;
+		e.preventDefault();
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		element.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+		mobileMenuOpen = false;
+	}
+
+	function toggleTheme() {
+		theme = theme === 'dark' ? 'light' : 'dark';
+		document.documentElement.classList.remove('light', 'dark');
+		document.documentElement.classList.add(theme);
+		document.documentElement.style.colorScheme = theme;
+		localStorage.setItem('theme', theme);
+		document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#050505' : '#f4f4f5');
 	}
 
 	function toggleMobileMenu() {
@@ -100,8 +111,7 @@
 	onMount(() => {
 		if (typeof window === 'undefined') return;
 
-		document.documentElement.classList.remove('light');
-		localStorage.setItem('theme', 'dark');
+		theme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
 
 		window.addEventListener('scroll', handleScroll);
 		handleScroll();
@@ -160,8 +170,8 @@
 		<div class="flex items-center justify-between h-16 md:h-20">
 			<!-- Logo/Brand -->
 			<a
-				href="#home"
-				on:click={(e) => scrollToSection(e, '#home')}
+				href="/#home"
+				on:click={(e) => scrollToSection(e, '/#home')}
 				class="text-2xl md:text-2xl lg:text-3xl font-bold tracking-tight font-sans text-text-heading focus:outline-none focus:ring-2 focus:ring-azure rounded"
 				aria-label="Daniel Bubu Mawuena — Go to home"
 				data-testid="nav-brand"
@@ -224,14 +234,31 @@
 						rel="noopener noreferrer"
 						class="px-4 py-2 bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure"
 						role="menuitem"
-						aria-label="Download resume"
+						aria-label="Download CV"
 					>
-						Resume
+						CV
 					</a>
 				</li>
 			</ul>
 
+			<button
+				type="button"
+				class="hidden rounded px-2 py-1 font-mono text-xs text-text-body focus:outline-none focus:ring-2 focus:ring-azure md:inline-flex"
+				aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+				on:click={toggleTheme}
+			>
+				{theme === 'light' ? 'Dark' : 'Light'}
+			</button>
+
 			<!-- Mobile Menu Button -->
+			<button
+				type="button"
+				class="rounded px-2 py-1 font-mono text-xs text-text-body focus:outline-none focus:ring-2 focus:ring-azure md:hidden"
+				aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+				on:click={toggleTheme}
+			>
+				{theme === 'light' ? 'Dark' : 'Light'}
+			</button>
 			<button
 				on:click={toggleMobileMenu}
 				class="md:hidden p-2 text-text-body hover:text-azure focus:outline-none focus:ring-2 focus:ring-azure rounded"
@@ -300,9 +327,9 @@
 					rel="noopener noreferrer"
 					class="block mx-4 mt-4 px-4 py-3 text-center bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure"
 					role="menuitem"
-					aria-label="Download resume"
+					aria-label="Download CV"
 				>
-					Download Resume
+					Download CV
 				</a>
 			</div>
 		{/if}

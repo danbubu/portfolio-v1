@@ -20,7 +20,12 @@ export default defineConfig({
 		command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
 		url: 'http://127.0.0.1:4173',
 		reuseExistingServer: !process.env.CI,
-		timeout: 180_000
+		timeout: 180_000,
+		env: {
+			VITE_EMAILJS_SERVICE_ID: 'service_test',
+			VITE_EMAILJS_TEMPLATE_ID: 'template_test',
+			VITE_EMAILJS_PUBLIC_KEY: 'public_test'
+		}
 	},
 	projects: [
 		{

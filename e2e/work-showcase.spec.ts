@@ -65,8 +65,8 @@ test.describe('Work project showcase', () => {
 		await showcase.getByRole('button', { name: 'Next project' }).click();
 		await expect(showcase).not.toHaveAttribute('data-project', firstProject!);
 
-		await showcase.getByRole('tab', { name: 'Show Intervue-AI' }).click();
-		await expect(showcase).toHaveAttribute('data-project', 'Intervue-AI');
+		await showcase.getByRole('tab', { name: 'Show Intervue AI' }).click();
+		await expect(showcase).toHaveAttribute('data-project', 'Intervue AI');
 		await expect(page.getByTestId('project-live-link')).toBeVisible();
 	});
 

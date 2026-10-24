@@ -1,4 +1,6 @@
 <script lang="ts">
+	import SiteTestReport from "$lib/components/SiteTestReport.svelte";
+
 	const socialLinks = [
 		{
 			name: "GitHub",
@@ -28,19 +30,21 @@
 	];
 
 	const quickLinks = [
-		{ label: "Home", href: "#home" },
-		{ label: "Work", href: "#work" },
-		{ label: "Experience", href: "#experience" },
-		{ label: "Contact", href: "#contact" },
+		{ label: "Home", href: "/#home" },
+		{ label: "Work", href: "/#work" },
+		{ label: "Experience", href: "/#experience" },
+		{ label: "About", href: "/#about" },
+		{ label: "Contact", href: "/#contact" },
+		{ label: "CV", href: "/cv/" },
 	];
 
-	function scrollToSection(e: Event, href: string) {
-		e.preventDefault();
-		const targetId = href.replace("#", "");
+	function scrollToSection(e: MouseEvent, href: string) {
+		const targetId = href.replace(/^.*#/, "");
 		const element = document.getElementById(targetId);
-		if (element) {
-			element.scrollIntoView({ behavior: "smooth" });
-		}
+		if (!element) return;
+		e.preventDefault();
+		const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		element.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
 	}
 
 	function getCurrentYear() {
@@ -57,8 +61,7 @@
 					Daniel Bubu Mawuena
 				</h3>
 				<p class="text-text-body mb-4">
-					AWS Certified Full Stack Developer building scalable,
-					high-performance applications with modern technologies.
+					Full-stack developer and QA engineer in Tema, Ghana.
 				</p>
 				<div class="flex space-x-4">
 					{#each socialLinks as social}
@@ -141,7 +144,7 @@
 									d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
 								></path>
 							</svg>
-							Download Resume
+							Download CV
 						</a>
 					</li>
 				</ul>
@@ -154,11 +157,14 @@
 				Designed & Built by Daniel Mawuena © {getCurrentYear()}.
 			</p>
 			<p class="text-text-muted text-xs">
-				Engineered with <span class="text-text-heading">SvelteKit</span
-				>, <span class="text-text-heading">Tailwind</span>,
-				<span class="text-text-heading">GSAP</span>, &
+				Built with <span class="text-text-heading">SvelteKit</span>,
+				<span class="text-text-heading">Tailwind</span>,
+				<span class="text-text-heading">GSAP</span> and
 				<span class="text-text-heading">Firebase</span>.
 			</p>
+			<div class="mt-3 flex justify-center">
+				<SiteTestReport />
+			</div>
 		</div>
 	</div>
 </footer>

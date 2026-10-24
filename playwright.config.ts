@@ -6,7 +6,11 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
-	reporter: [['list'], ['html', { open: 'never' }]],
+	reporter: [
+		['list'],
+		['html', { open: 'never' }],
+		['json', { outputFile: 'playwright-report.json' }]
+	],
 	timeout: 30_000,
 	expect: {
 		timeout: 8_000
@@ -17,7 +21,8 @@ export default defineConfig({
 		screenshot: 'only-on-failure'
 	},
 	webServer: {
-		command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
+		command:
+			'VITE_EMAILJS_SERVICE_ID=service_test VITE_EMAILJS_TEMPLATE_ID=template_test VITE_EMAILJS_PUBLIC_KEY=public_test npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
 		url: 'http://127.0.0.1:4173',
 		reuseExistingServer: !process.env.CI,
 		timeout: 180_000

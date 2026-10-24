@@ -44,7 +44,7 @@ export const actions: Actions = {
       description: `A project built with ${techStack}`,
       status: "Live",
       category: "Project",
-      previews: ["/images/projects/airdrop-tracker1.png"],
+      previews: ["/images/projects/airdrop-tracker1.webp"],
       inspiration: `Built to solve a real workflow need around ${title}.`,
       engineeringApproach:
         "Shipped with a pragmatic stack focused on clarity, performance, and maintainability.",

@@ -38,24 +38,16 @@ test.describe('Portfolio smoke', () => {
 		}
 	});
 
-	test('Builder / Thinker toggle swaps work content', async ({ page }) => {
+	test('selected work names the four current builds', async ({ page }) => {
 		await gotoHome(page);
-
 		const work = page.locator('#work');
 		await work.scrollIntoViewIfNeeded();
 
-		await expect(work.getByRole('heading', { name: 'Work & Credentials' })).toBeVisible();
-		await expect(page.getByTestId('project-showcase')).toBeVisible();
-		await expect(page.getByTestId('project-live-link')).toBeVisible();
-		await expect(work.getByRole('heading', { name: 'Tech Stack' })).toBeVisible();
-
-		await work.getByRole('button', { name: 'Toggle between builder and thinker mode' }).click();
-
-		const showcase = page.getByTestId('project-showcase');
-		await expect(showcase).toHaveAttribute('data-showcase-mode', 'thinker');
-		await expect(showcase.getByRole('heading', { name: 'Engineering approach' })).toBeVisible();
-		await expect(work.getByRole('heading', { name: 'Philosophy' })).toBeVisible();
-		await expect(page.getByTestId('project-live-link')).toHaveCount(0);
+		await expect(work.getByRole('heading', { name: 'Selected work' })).toBeVisible();
+		for (const title of ['Intervue AI', 'NabbyCare+', 'The Control Room', 'Wondez Barber']) {
+			await expect(work.getByRole('heading', { name: title })).toBeVisible();
+		}
+		await expect(work.getByRole('link', { name: 'Read the Intervue AI case study' })).toBeVisible();
 	});
 
 	test('Experience and Contact surfaces stay intact', async ({ page }) => {
@@ -66,20 +58,23 @@ test.describe('Portfolio smoke', () => {
 		await expect(experience.getByRole('heading', { name: 'Experience' })).toBeVisible();
 		const firstRole = experience.locator('.experience-item').first();
 		await expect(firstRole).toBeVisible();
-		await expect(firstRole.getByText('RPL Technologies')).toBeVisible();
-		await expect(firstRole.getByText('QA / Frontend Development')).toBeVisible();
+		await expect(firstRole.getByText('KAVD Corp')).toBeVisible();
+		await expect(firstRole.getByText('CTO and co-founder')).toBeVisible();
 		await expect(firstRole.getByText(/Present/i)).toBeVisible();
-		await expect(firstRole.getByText(/Fidelity Bank Ghana/i)).toBeVisible();
-		await expect(firstRole.getByText(/Kemy/i)).toBeVisible();
-		await expect(experience.getByText(/Adroit|KNUST|Intern|Lead/i).first()).toBeVisible();
+
+		await expect(experience.getByText('QA and Frontend Engineer')).toBeVisible();
+		await expect(experience.getByText('RPL Technologies')).toBeVisible();
+		await expect(experience.getByText(/Fidelity Bank Ghana/i)).toBeVisible();
+		await expect(experience.getByText(/Kemy/i)).toBeVisible();
+		await expect(experience.getByText(/Winifred Anokye/i)).toBeVisible();
 
 		const contact = page.locator('#contact');
 		await contact.scrollIntoViewIfNeeded();
-		await expect(contact.getByRole('heading', { name: 'Ready to Ship?' })).toBeVisible();
+		await expect(contact.getByRole('heading', { name: "Let's talk" })).toBeVisible();
 		await expect(contact.locator('#name')).toBeVisible();
 		await expect(contact.locator('#email')).toBeVisible();
 		await expect(contact.locator('#message')).toBeVisible();
-		await expect(contact.getByRole('button', { name: 'Send Transmission' })).toBeVisible();
+		await expect(contact.getByRole('button', { name: 'Send message' })).toBeVisible();
 	});
 
 	test('nav scroll reaches the Work section', async ({ page }) => {

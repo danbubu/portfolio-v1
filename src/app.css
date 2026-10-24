@@ -1,3 +1,7 @@
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,13 +11,18 @@
     @apply border-zinc-800;
   }
 
+  html {
+    overflow-x: clip;
+  }
+
   body {
     background: #050505 !important;
-    color: #a1a1aa;
-    font-family: "Geist Sans", "Inter", "-apple-system", "BlinkMacSystemFont",
+    color: #d4d4d8;
+    font-family: "Inter Variable", "Inter", "-apple-system", "BlinkMacSystemFont",
       "system-ui", sans-serif;
     letter-spacing: -0.01em;
     antialiased: true;
+    overflow-x: clip;
   }
 
   html {
@@ -493,4 +502,100 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Link blue needs 4.5:1 on #050505. Buttons keep bg-azure. */
+.text-azure {
+  color: #93c5fd !important;
+}
+
+:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  .tech-marquee-left,
+  .tech-marquee-right,
+  .playlist-marquee,
+  .waveform-bar,
+  .aurora-bg,
+  .status-dot,
+  .animate-pulse,
+  .animate-pulse-slow,
+  .animate-pulse-slower,
+  .hero-gradient-text {
+    animation: none !important;
+  }
+}
+
+html.light body,
+html.light .bg-obsidian-base {
+  background: #f6f5f3 !important;
+  color: #3f3f46 !important;
+}
+
+html.light .text-text-heading {
+  color: #18181b !important;
+}
+
+html.light .text-text-body {
+  color: #3f3f46 !important;
+}
+
+html.light .text-text-muted {
+  color: #3f3f46 !important;
+}
+
+html.light .text-azure {
+  color: #1e40af !important;
+}
+
+html.light .bg-neutral-900\/50,
+html.light .glass-card,
+html.light .bg-white\/5,
+html.light .bg-white\/\[0\.03\] {
+  background: #ffffff !important;
+}
+
+html.light .border-white\/10,
+html.light .border-zinc-800,
+html.light .border-zinc-700 {
+  border-color: #d4d4d8 !important;
+}
+
+html.light .terminal-input,
+html.light .bg-black\/40 {
+  background: #ffffff !important;
+  color: #18181b !important;
+}
+
+html.light .starfield {
+  opacity: 0.18;
+}
+
+html.light .map-tactical-filter {
+  filter: grayscale(1) contrast(1.05);
+}
+
+/* Opaque chip so the pass line stays readable on dark and light surfaces. */
+.test-report,
+html.light .test-report {
+  border: 1px solid #047857 !important;
+  background: #064e3b !important;
+  color: #ecfdf5 !important;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.test-report .text-text-muted,
+html.light .test-report .text-text-muted {
+  color: #d1fae5 !important;
 }

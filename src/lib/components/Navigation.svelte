@@ -32,11 +32,13 @@
 
 	let brandChars: ScrambleCharState[] = buildScrambleState(nameParts);
 
+	let isLight = false;
+
 	const navLinks = [
-		{ id: 'home', label: 'Home', href: '#home' },
-		{ id: 'work', label: 'Work', href: '#work' },
-		{ id: 'experience', label: 'Experience', href: '#experience' },
-		{ id: 'contact', label: 'Contact', href: '#contact' }
+		{ id: 'home', label: 'Home', href: '/#home' },
+		{ id: 'work', label: 'Work', href: '/#work' },
+		{ id: 'experience', label: 'Experience', href: '/#experience' },
+		{ id: 'contact', label: 'Contact', href: '/#contact' }
 	];
 
 	function handleScroll() {
@@ -56,13 +58,24 @@
 	}
 
 	function scrollToSection(e: Event, href: string) {
-		e.preventDefault();
-		const targetId = href.replace('#', '');
+		const targetId = href.split('#')[1];
+		if (!targetId) return;
 		const element = document.getElementById(targetId);
-		if (element) {
-			element.scrollIntoView({ behavior: 'smooth' });
-			mobileMenuOpen = false;
-		}
+		if (!element) return;
+		e.preventDefault();
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		element.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+		mobileMenuOpen = false;
+	}
+
+	function toggleTheme() {
+		isLight = !isLight;
+		document.documentElement.classList.toggle('light', isLight);
+		document.documentElement.classList.toggle('dark', !isLight);
+		document.documentElement.style.colorScheme = isLight ? 'light' : 'dark';
+		localStorage.setItem('theme', isLight ? 'light' : 'dark');
+		const meta = document.querySelector('meta[name="theme-color"]');
+		if (meta) meta.setAttribute('content', isLight ? '#f6f5f3' : '#050505');
 	}
 
 	function toggleMobileMenu() {
@@ -100,8 +113,7 @@
 	onMount(() => {
 		if (typeof window === 'undefined') return;
 
-		document.documentElement.classList.remove('light');
-		localStorage.setItem('theme', 'dark');
+		isLight = document.documentElement.classList.contains('light');
 
 		window.addEventListener('scroll', handleScroll);
 		handleScroll();
@@ -160,8 +172,8 @@
 		<div class="flex items-center justify-between h-16 md:h-20">
 			<!-- Logo/Brand -->
 			<a
-				href="#home"
-				on:click={(e) => scrollToSection(e, '#home')}
+				href="/#home"
+				on:click={(e) => scrollToSection(e, '/#home')}
 				class="text-2xl md:text-2xl lg:text-3xl font-bold tracking-tight font-sans text-text-heading focus:outline-none focus:ring-2 focus:ring-azure rounded"
 				aria-label="Daniel Bubu Mawuena — Go to home"
 				data-testid="nav-brand"
@@ -199,6 +211,16 @@
 				</span>
 			</a>
 
+			<button
+				type="button"
+				class="rounded-lg border border-zinc-700 px-3 py-2 font-mono text-xs text-text-body hover:border-azure focus:outline-none focus-visible:ring-2 focus-visible:ring-azure"
+				aria-pressed={isLight}
+				aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+				on:click={toggleTheme}
+			>
+				{isLight ? 'Dark' : 'Light'}
+			</button>
+
 			<!-- Desktop Navigation -->
 			<ul class="hidden md:flex items-center space-x-8" role="menubar">
 				{#each navLinks as link}
@@ -224,9 +246,9 @@
 						rel="noopener noreferrer"
 						class="px-4 py-2 bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure"
 						role="menuitem"
-						aria-label="Download resume"
+						aria-label="Download CV"
 					>
-						Resume
+						CV
 					</a>
 				</li>
 			</ul>
@@ -300,9 +322,9 @@
 					rel="noopener noreferrer"
 					class="block mx-4 mt-4 px-4 py-3 text-center bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure"
 					role="menuitem"
-					aria-label="Download resume"
+					aria-label="Download CV"
 				>
-					Download Resume
+					Download CV
 				</a>
 			</div>
 		{/if}
@@ -331,5 +353,16 @@
 
 	.nav-brand-char.is-interactive {
 		cursor: default;
+	}
+
+	:global([data-testid='nav-brand']) {
+		display: inline-block;
+		min-width: 12ch;
+	}
+
+	@media (min-width: 1024px) {
+		:global([data-testid='nav-brand']) {
+			min-width: 20ch;
+		}
 	}
 </style>

@@ -1,4 +1,4 @@
-# Daniel Mawuena | Digital Artisan Portfolio
+# Daniel Mawuena | Full-Stack Developer & QA Engineer
 
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
@@ -139,9 +139,9 @@ This portfolio is a personal project. All rights reserved.
 ## Contact
 
 **Daniel Mawuena**  
-Full Stack Architect
+Full-Stack Developer & QA Engineer
 
-- Portfolio: [danielmawuena.com](https://danielmawuena.com)
+- Portfolio: [danielmawuena.me](https://danielmawuena.me)
 - Email: danielmawuena75@gmail.com
 - GitHub: [@danbubu](https://github.com/danbubu)
 

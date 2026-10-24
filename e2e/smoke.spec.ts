@@ -64,22 +64,22 @@ test.describe('Portfolio smoke', () => {
 		const experience = page.locator('#experience');
 		await experience.scrollIntoViewIfNeeded();
 		await expect(experience.getByRole('heading', { name: 'Experience' })).toBeVisible();
-		const firstRole = experience.locator('.experience-item').first();
-		await expect(firstRole).toBeVisible();
-		await expect(firstRole.getByText('RPL Technologies')).toBeVisible();
-		await expect(firstRole.getByText('QA / Frontend Development')).toBeVisible();
-		await expect(firstRole.getByText(/Present/i)).toBeVisible();
-		await expect(firstRole.getByText(/Fidelity Bank Ghana/i)).toBeVisible();
-		await expect(firstRole.getByText(/Kemy/i)).toBeVisible();
+		const rpl = experience.locator('.experience-item').filter({ hasText: 'RPL Technologies' });
+		await expect(rpl).toBeVisible();
+		await expect(rpl.getByText('QA and Frontend Engineer')).toBeVisible();
+		await expect(rpl.getByText(/Present/i)).toBeVisible();
+		await expect(rpl.getByText(/Fidelity Bank Ghana/i)).toBeVisible();
+		await expect(rpl.getByText(/Kemy/i)).toBeVisible();
+		await expect(experience.getByText('KAVD Corp')).toBeVisible();
 		await expect(experience.getByText(/Adroit|KNUST|Intern|Lead/i).first()).toBeVisible();
 
 		const contact = page.locator('#contact');
 		await contact.scrollIntoViewIfNeeded();
-		await expect(contact.getByRole('heading', { name: 'Ready to Ship?' })).toBeVisible();
+		await expect(contact.getByRole('heading', { name: "Let's talk" })).toBeVisible();
 		await expect(contact.locator('#name')).toBeVisible();
 		await expect(contact.locator('#email')).toBeVisible();
 		await expect(contact.locator('#message')).toBeVisible();
-		await expect(contact.getByRole('button', { name: 'Send Transmission' })).toBeVisible();
+		await expect(contact.getByRole('button', { name: 'Send message' })).toBeVisible();
 	});
 
 	test('nav scroll reaches the Work section', async ({ page }) => {

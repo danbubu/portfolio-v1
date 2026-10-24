@@ -5,11 +5,27 @@
 	import { experiences, certifications } from "$lib/stores/experience";
 	import type { WorkExperience, Certification } from "$lib/stores/experience";
 	import { z } from "zod";
-	import { addDoc, collection } from "firebase/firestore";
-	import { db } from "$lib/firebase";
-	import emailjs from "@emailjs/browser";
 	import OrbitingTechBadges from "$lib/components/OrbitingTechBadges.svelte";
 	import ProjectShowcase from "$lib/components/ProjectShowcase.svelte";
+	import CaseStudyCards from "$lib/components/CaseStudyCards.svelte";
+	import AlsoBuilt from "$lib/components/AlsoBuilt.svelte";
+	import Skills from "$lib/components/Skills.svelte";
+
+	const techRowOne = [
+		{ name: "React", icon: "/images/tech/react.svg" },
+		{ name: "TypeScript", icon: "/images/tech/typescript.svg" },
+		{ name: "Node.js", icon: "/images/tech/nodejs.svg" },
+		{ name: "SvelteKit", icon: "/images/tech/svelte.svg" },
+		{ name: "Next.js", icon: "/images/tech/nextjs.svg" },
+	];
+	const techRowTwo = [
+		{ name: "Supabase", icon: "/images/tech/supabase.svg" },
+		{ name: "PostgreSQL", icon: "/images/tech/postgresql.svg" },
+		{ name: "Firebase", icon: "/images/tech/firebase.svg" },
+		{ name: "Tailwind", icon: "/images/tech/tailwindcss.svg" },
+		{ name: "AWS", icon: "/images/tech/aws.svg" },
+		{ name: "Playwright", icon: "/images/tech/playwright.svg" },
+	];
 
 	// Suppress unknown prop warning
 	//export let params: any = {};
@@ -54,15 +70,14 @@
 		title: project.title,
 		status: project.status,
 		statusColor:
-			project.status === "Live" ? "bg-green-500" : "bg-purple-500",
+			project.status === "Live"
+				? "bg-green-500"
+				: project.status === "Archived"
+					? "bg-zinc-500"
+					: "bg-purple-500",
 		metric: project.metrics || project.category,
 		subtext: project.tagline,
 	}));
-
-	// GSAP and ScrollTrigger
-	let gsap: any;
-	let ScrollTrigger: any;
-	let Flip: any;
 
 	// Spotlight border tracking
 	let spotlightCards: HTMLElement[] = [];
@@ -113,21 +128,12 @@
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 
-		// Rate limiting check
-		const now = Date.now();
-		if (now - lastSubmissionTime < 60000) {
-			status = "error";
-			feedback = "Please wait a moment before sending another message.";
-			return;
-		}
-		lastSubmissionTime = now;
-
 		// Honeypot check - silent fail for bots
 		if (form.honeypot !== "") {
 			return;
 		}
 
-		// Validate with Zod
+		// Validate with Zod before the rate limit, so a typo does not lock the form.
 		const validationResult = contactSchema.safeParse(form);
 		if (!validationResult.success) {
 			status = "error";
@@ -137,56 +143,71 @@
 			return;
 		}
 
+		const now = Date.now();
+		if (now - lastSubmissionTime < 60000) {
+			status = "error";
+			feedback = "Please wait a moment before sending another message.";
+			return;
+		}
+		lastSubmissionTime = now;
+
 		// Set loading state
 		status = "submitting";
 		feedback = "";
 
 		try {
-			// Sanitize inputs (basic XSS prevention)
 			const sanitizedData = {
 				name: form.name.trim().replace(/[<>]/g, ""),
 				email: form.email.trim().replace(/[<>]/g, ""),
 				message: form.message.trim().replace(/[<>]/g, ""),
-				timestamp: new Date(),
+				timestamp: new Date().toISOString(),
 			};
 
-			// Firestore backup
-			await addDoc(collection(db, "messages"), sanitizedData);
+			const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined;
+			const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined;
+			const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined;
+			if (!serviceId || !templateId || !publicKey) {
+				throw new Error("Email is not configured");
+			}
 
-			// EmailJS send
+			const emailjs = (await import("@emailjs/browser")).default;
 			await emailjs.send(
-				import.meta.env.VITE_EMAILJS_SERVICE_ID,
-				import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+				serviceId,
+				templateId,
 				{
 					name: sanitizedData.name,
 					email: sanitizedData.email,
 					message: sanitizedData.message,
 				},
-				import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+				publicKey,
 			);
 
-			// Success
-			status = "success";
-			feedback = "Transmission Sent ✅";
+			// Backup write. A failure here should not hide a sent email.
+			// TODO(Daniel): confirm what the Firestore messages collection is used for.
+			try {
+				const { getDb } = await import("$lib/firebase");
+				const db = getDb();
+				if (db) {
+					const { addDoc, collection } = await import("firebase/firestore");
+					await addDoc(collection(db, "messages"), sanitizedData);
+				}
+			} catch (backupError) {
+				if (import.meta.env.DEV) console.error("Message backup failed:", backupError);
+			}
 
-			// Reset form
+			status = "success";
+			feedback = "Thanks, your message is on its way. I'll reply by email.";
+
 			form = {
 				name: "",
 				email: "",
 				message: "",
 				honeypot: "",
 			};
-
-			// Reset status after 3 seconds
-			setTimeout(() => {
-				status = "idle";
-				feedback = "";
-			}, 3000);
 		} catch (error) {
-			if (import.meta.env.DEV)
-				console.error("Error submitting form:", error);
+			if (import.meta.env.DEV) console.error("Error submitting form:", error);
 			status = "error";
-			feedback = "Transmission failed. Please try again.";
+			feedback = "That didn't send. Please try again, or email danielmawuena75@gmail.com.";
 		}
 	}
 
@@ -244,70 +265,19 @@
 		window.addEventListener("scroll", handleScroll);
 		handleScroll(); // Initial call
 
-		// Project Carousel auto-play
-		const carouselInterval = setInterval(() => {
-			currentSlide =
-				(currentSlide + 1) % Math.max(carouselSlides.length, 1);
-		}, 4000); // 4 seconds per slide
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const carouselInterval = reduceMotion
+			? undefined
+			: setInterval(() => {
+					currentSlide =
+						(currentSlide + 1) % Math.max(carouselSlides.length, 1);
+				}, 4000);
+
+		setupTimeout = setTimeout(setupSpotlightCards, 100);
 
 		return () => {
-			clearInterval(carouselInterval);
-		};
-
-		// Initialize GSAP asynchronously
-		(async () => {
-			const gsapModule = await import("gsap");
-			const scrollTriggerModule = await import("gsap/ScrollTrigger");
-			const flipModule = await import("gsap/Flip");
-			gsap = gsapModule.gsap;
-			ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-			Flip = flipModule.Flip;
-			gsap.registerPlugin(ScrollTrigger, Flip);
-
-			// Hero animations
-			gsap.from(".hero-content", {
-				opacity: 0,
-				x: -50,
-				duration: 1,
-				ease: "power3.out",
-				delay: 0.2,
-			});
-
-			gsap.from(".hero-visual", {
-				opacity: 0,
-				x: 50,
-				duration: 1,
-				ease: "power3.out",
-				delay: 0.4,
-			});
-
-			// Scroll reveal animations
-			gsap.utils.toArray(".reveal").forEach((element: any) => {
-				gsap.from(element, {
-					opacity: 0,
-					y: 60,
-					duration: 0.8,
-					ease: "power2.out",
-					scrollTrigger: {
-						trigger: element,
-						start: "top 85%",
-						toggleActions: "play none none none",
-					},
-				});
-			});
-
-			// Setup spotlight cards
-			setupTimeout = setTimeout(setupSpotlightCards, 100);
-		})();
-
-		// Cleanup on component destroy
-		return () => {
+			if (carouselInterval) clearInterval(carouselInterval);
 			cleanupSpotlightCards();
-			if (ScrollTrigger) {
-				ScrollTrigger.getAll().forEach((trigger: any) =>
-					trigger.kill(),
-				);
-			}
 			if (!isTouchDevice) {
 				window.removeEventListener("mousemove", handleMouseMove);
 			}
@@ -319,17 +289,68 @@
 </script>
 
 <svelte:head>
-	<title>Daniel Bubu Mawuena - Digital Artisan | Full Stack Developer</title>
+	<title>Daniel Mawuena · Full-Stack Developer & QA Engineer</title>
 	<meta
 		name="description"
-		content="Crafting digital experiences with focus and precision. Full Stack Developer with AWS & IBM certifications, building scalable applications."
+		content="Daniel Mawuena, full-stack developer and QA engineer in Tema, Ghana. React, Next.js, SvelteKit, Supabase, Playwright. AWS Certified Cloud Practitioner. Open to remote part-time roles."
 	/>
+	<link rel="canonical" href="https://danielmawuena.me/" />
+	<meta property="og:title" content="Daniel Mawuena · Full-Stack Developer & QA Engineer" />
 	<meta
-		name="keywords"
-		content="full stack developer, web developer, react developer, aws certified, blockchain, Ghana developer"
+		property="og:description"
+		content="I build web products end to end and test how they break. Intervue AI, NabbyCare+, QA on a banking migration. Based in Tema, Ghana; open to remote part-time roles."
 	/>
+	<meta property="og:url" content="https://danielmawuena.me/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://danielmawuena.me/og.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="Daniel Mawuena, Full-Stack Developer and QA Engineer" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Daniel Mawuena · Full-Stack Developer & QA Engineer" />
+	<meta name="twitter:image" content="https://danielmawuena.me/og.png" />
+	<meta name="twitter:site" content="@thatbubuguy" />
 	<meta name="author" content="Daniel Bubu Mawuena" />
-	<meta name="theme-color" content="#050505" />
+	<link
+		rel="preload"
+		as="image"
+		href="/images/profile-cutout-960.avif"
+		type="image/avif"
+		fetchpriority="high"
+	/>
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "Person",
+		name: "Daniel Bubu Mawuena",
+		alternateName: "Bubu",
+		jobTitle: "Full-Stack Developer & QA Engineer",
+		url: "https://danielmawuena.me",
+		email: "mailto:danielmawuena75@gmail.com",
+		address: {
+			"@type": "PostalAddress",
+			addressLocality: "Tema",
+			addressRegion: "Greater Accra",
+			addressCountry: "GH"
+		},
+		alumniOf: {
+			"@type": "CollegeOrUniversity",
+			name: "Kwame Nkrumah University of Science and Technology"
+		},
+		worksFor: { "@type": "Organization", name: "RPL Technologies" },
+		hasCredential: {
+			"@type": "EducationalOccupationalCredential",
+			name: "AWS Certified Cloud Practitioner",
+			dateCreated: "2025-08"
+		},
+		knowsAbout: ["React", "Next.js", "SvelteKit", "TypeScript", "Supabase", "PostgreSQL", "Playwright", "QA", "LLM integration"],
+		sameAs: [
+			"https://www.linkedin.com/in/daniel-mawuena-833b3331b/",
+			"https://github.com/danbubu",
+			"https://x.com/thatbubuguy",
+			"https://thatbubuguy.substack.com/",
+			"https://www.credly.com/users/daniel-mawuena"
+		]
+	})}</script>`}
 </svelte:head>
 
 <!-- Scroll Progress Indicator -->
@@ -382,55 +403,38 @@
 				>
 					<div class="status-dot"></div>
 					<span class="text-text-body text-sm font-mono"
-						>Available for work</span
+						>Tema, Ghana · Open to remote part-time roles</span
 					>
 				</div>
 
-				<!-- Main Headline with Glowing Stroke -->
+				<p class="font-mono text-sm text-azure">Daniel Mawuena · Full-Stack Developer & QA Engineer</p>
+
 				<h1
-					class="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight tracking-tight"
+					class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-text-heading"
 				>
-					<span class="block text-text-heading mb-2"
-						>Crafting digital</span
-					>
-					<span class="block text-text-heading mb-2"
-						>experiences with</span
-					>
-					<span class="block">
-						<span
-							class="font-serif italic hero-gradient-text"
-							style="animation-delay: 0s;">focus</span
-						>
-						<span class="text-text-heading"> and </span>
-						<span
-							class="font-serif italic hero-gradient-text"
-							style="animation-delay: 0.5s;">precision</span
-						>
-					</span>
+					I build web products end to end, and I
+					<span class="font-serif italic hero-gradient-text">test how they break.</span>
 				</h1>
 
-				<!-- Subtext -->
 				<p
-					class="text-lg md:text-xl lg:text-2xl text-text-body max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+					class="text-lg md:text-xl text-text-body max-w-2xl mx-auto lg:mx-0 leading-relaxed"
 				>
-					AWS Certified Full Stack Developer building scalable
-					applications with modern technologies and innovative
-					solutions.
+					Full-stack developer and QA engineer in Tema, Ghana. I just graduated in Computer Science from KNUST and do QA and frontend work at RPL Technologies. I care about things actually working, not just looking like they do.
+				</p>
+				<p class="font-mono text-sm text-text-muted">
+					About 21 hrs/week until Nov 2027 (national service) · Remote
 				</p>
 
 				<!-- CTA Buttons -->
 				<div
 					class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
 				>
-					<button
-						on:click={() => {
-							const el = document.getElementById("work");
-							el?.scrollIntoView({ behavior: "smooth" });
-						}}
-						class="px-8 py-4 bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure"
+					<a
+						href="#work"
+						class="px-8 py-4 bg-azure text-white rounded-lg font-semibold hover:shadow-spotlight transition-all focus:outline-none focus:ring-2 focus:ring-azure text-center"
 					>
-						View Work
-					</button>
+						See my work
+					</a>
 					<a
 						href="/Daniel_Mawuena_resume.pdf"
 						target="_blank"
@@ -450,14 +454,14 @@
 								d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
 							/>
 						</svg>
-						Download Resume
+						Download CV
 					</a>
 				</div>
 			</div>
 
 			<!-- Right Side - Visual with orbiting tech badges -->
 			<div
-				class="hero-visual relative flex items-center justify-center order-first lg:order-none overflow-visible lg:overflow-visible"
+				class="hero-visual relative flex w-full min-w-0 items-center justify-center order-first lg:order-none"
 			>
 				<!-- Extra horizontal room on laptop/desktop so the ring isn't clipped by the column -->
 				<div
@@ -471,16 +475,30 @@
 					<OrbitingTechBadges>
 						<!-- Profile Image with Gradient Mask (planet — does not rotate) -->
 						<div
-							class="relative w-full aspect-square max-w-[560px] mx-auto lg:scale-[1.4] scale-100"
+							class="relative w-full aspect-square max-w-[560px] mx-auto overflow-hidden lg:scale-[1.4] scale-100"
 							style="mask-image: linear-gradient(to bottom, black 50%, transparent 95%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 95%);"
 						>
-							<img
-								src="/images/profile-cutout.png"
-								alt="Daniel Bubu Mawuena - AWS Certified Full Stack Developer"
-								class="w-full h-full object-contain relative z-0"
-								loading="eager"
-								decoding="async"
-							/>
+							<!-- Absolute so the cutout's intrinsic height cannot grow the hero and shift the headline. -->
+							<picture class="absolute inset-0 block">
+								<source
+									type="image/avif"
+									srcset="/images/profile-cutout-480.avif 480w, /images/profile-cutout-960.avif 960w"
+									sizes="(min-width: 1024px) 560px, 90vw"
+								/>
+								<source
+									type="image/webp"
+									srcset="/images/profile-cutout-480.webp 480w, /images/profile-cutout-960.webp 960w"
+									sizes="(min-width: 1024px) 560px, 90vw"
+								/>
+								<img
+									src="/images/profile-cutout-960.webp"
+									alt="Daniel Mawuena"
+									width="960"
+									height="1162"
+									class="absolute inset-0 h-full w-full object-contain"
+									fetchpriority="high"
+								/>
+							</picture>
 						</div>
 					</OrbitingTechBadges>
 				</div>
@@ -560,6 +578,9 @@
 				</h3>
 				<div
 					class="flex flex-col md:flex-col gap-4 md:gap-2 overflow-y-auto md:overflow-y-auto h-auto md:h-full pb-2 md:pb-0 md:pr-2 scrollbar-hide"
+					role="region"
+					aria-label="Certifications"
+					tabindex="0"
 				>
 					{#each certifications as cert}
 						<a
@@ -610,8 +631,8 @@
 						class="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity"
 					>
 						<img
-							src="/images/tema-map.png"
-							alt="Tema, Ghana Map"
+							src="/images/tema-map.webp"
+							alt="Map of Tema, Ghana" width="800" height="771"
 							class="w-full h-full object-cover map-tactical-filter"
 							loading="lazy"
 						/>
@@ -739,7 +760,7 @@
 										</div>
 									</div>
 								{/each}
-								<!-- Duplicate for seamless loop -->
+								<!-- Second copy so the loop has no gap -->
 								{#each [{ title: "Frens", artist: "Obongjayar" }, { title: "History", artist: "Dave, James Blake" }, { title: "For You", artist: "Kadjha Bonet" }, { title: "I wish it was me", artist: "Obongjayar" }, { title: "Queen Tings", artist: "Masego, Tiffany Gouché" }, { title: "Free Mind", artist: "Tems" }, { title: "Chapter 16", artist: "Dave, Kano" }, { title: "First in Class", artist: "Omar Sterling" }, { title: "We dey manage", artist: "M.anifest" }, { title: "Wonderful Wonder", artist: "Nathaniel Bassey, Love Song" }, { title: "Disco", artist: "Surf Curse" }] as song}
 									<div class="playlist-item">
 										<div class="flex items-start gap-2">
@@ -778,17 +799,10 @@
 							Philosophy
 						</h3>
 						<p
-							class="philosophy-copy font-serif text-text-body text-[15px] md:text-base leading-[1.8] tracking-[0.01em] text-justify"
+							class="philosophy-copy font-serif text-text-body text-[15px] md:text-base leading-[1.8] tracking-[0.01em]"
 							data-testid="philosophy-copy"
 						>
-							Code is more than just a tool — it's a bridge that
-							connects people, ideas, and solutions. Whether I'm
-							simplifying crypto payments or guiding someone
-							through their daily challenges, I build software
-							that solves real human problems. At the heart of it
-							all, it's never about money or fame; it's about
-							using technology to make life better for others and
-							help humanity move forward.
+							I believe most software feels generic because builders skip the slow part: understanding the real people they're building for, down to the smallest detail. Code is generous by nature. Every library I use exists because a stranger made it easier for someone like me, and I want to do the same.
 						</p>
 					{:else}
 						<!-- Builder Mode: Tech Stack Double Marquee -->
@@ -802,93 +816,26 @@
 							>
 						</div>
 						<div class="space-y-3">
-							<!-- Row 1: Scrolls Left -->
 							<div class="tech-marquee-container overflow-hidden">
 								<div class="tech-marquee-left flex gap-6">
-									<!-- First set -->
-									{#each [{ name: "React", icon: "/images/tech/react.svg" }, { name: "TypeScript", icon: "/images/tech/typescript.svg" }, { name: "Node.js", icon: "/images/tech/nodejs.svg" }, { name: "SvelteKit", icon: "/images/tech/svelte.svg" }] as tech}
-										<div
-											class="flex items-center gap-2 flex-shrink-0 tech-item"
-										>
-											<div
-												class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center"
-											>
-												<img
-													src={tech.icon}
-													alt={tech.name}
-													class="w-5 h-5 tech-icon"
-													loading="lazy"
-												/>
+									{#each [...techRowOne, ...techRowOne] as tech}
+										<div class="flex items-center gap-2 flex-shrink-0 tech-item">
+											<div class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center">
+												<img src={tech.icon} alt="" class="w-5 h-5 tech-icon" />
 											</div>
-											<span
-												class="text-text-body text-sm font-mono"
-												>{tech.name}</span
-											>
-										</div>
-									{/each}
-									<!-- Duplicate for seamless loop -->
-									{#each [{ name: "React", icon: "/images/tech/react.svg" }, { name: "TypeScript", icon: "/images/tech/typescript.svg" }, { name: "Node.js", icon: "/images/tech/nodejs.svg" }, { name: "SvelteKit", icon: "/images/tech/svelte.svg" }] as tech}
-										<div
-											class="flex items-center gap-2 flex-shrink-0 tech-item"
-										>
-											<div
-												class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center"
-											>
-												<img
-													src={tech.icon}
-													alt={tech.name}
-													class="w-5 h-5 tech-icon"
-												/>
-											</div>
-											<span
-												class="text-text-body text-sm font-mono"
-												>{tech.name}</span
-											>
+											<span class="text-text-body text-sm font-mono">{tech.name}</span>
 										</div>
 									{/each}
 								</div>
 							</div>
-							<!-- Row 2: Scrolls Right -->
 							<div class="tech-marquee-container overflow-hidden">
 								<div class="tech-marquee-right flex gap-6">
-									<!-- First set -->
-									{#each [{ name: "Supabase", icon: "/images/tech/supabase.svg" }, { name: "PostgreSQL", icon: "/images/tech/postgresql.svg" }, { name: "Firebase", icon: "/images/tech/firebase.svg" }, { name: "Tailwind", icon: "/images/tech/tailwindcss.svg" }, { name: "AWS", icon: "/images/tech/aws.svg" }] as tech}
-										<div
-											class="flex items-center gap-2 flex-shrink-0 tech-item"
-										>
-											<div
-												class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center"
-											>
-												<img
-													src={tech.icon}
-													alt={tech.name}
-													class="w-5 h-5 tech-icon"
-												/>
+									{#each [...techRowTwo, ...techRowTwo] as tech}
+										<div class="flex items-center gap-2 flex-shrink-0 tech-item">
+											<div class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center">
+												<img src={tech.icon} alt="" class="w-5 h-5 tech-icon" />
 											</div>
-											<span
-												class="text-text-body text-sm font-mono"
-												>{tech.name}</span
-											>
-										</div>
-									{/each}
-									<!-- Duplicate for seamless loop -->
-									{#each [{ name: "Supabase", icon: "/images/tech/supabase.svg" }, { name: "PostgreSQL", icon: "/images/tech/postgresql.svg" }, { name: "Firebase", icon: "/images/tech/firebase.svg" }, { name: "Tailwind", icon: "/images/tech/tailwindcss.svg" }, { name: "AWS", icon: "/images/tech/aws.svg" }] as tech}
-										<div
-											class="flex items-center gap-2 flex-shrink-0 tech-item"
-										>
-											<div
-												class="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center"
-											>
-												<img
-													src={tech.icon}
-													alt={tech.name}
-													class="w-5 h-5 tech-icon"
-												/>
-											</div>
-											<span
-												class="text-text-body text-sm font-mono"
-												>{tech.name}</span
-											>
+											<span class="text-text-body text-sm font-mono">{tech.name}</span>
 										</div>
 									{/each}
 								</div>
@@ -1009,11 +956,11 @@
 										>{slide.status}</span
 									>
 								</div>
-								<h4
+								<p
 									class="text-text-heading font-semibold text-xs mb-1.5"
 								>
 									{slide.title}
-								</h4>
+								</p>
 								<div class="text-xl font-bold mb-1">
 									<span
 										class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500"
@@ -1035,6 +982,13 @@
 	</div>
 </section>
 
+<section class="px-6 pb-8 md:px-8" aria-label="More work">
+	<div class="mx-auto max-w-7xl">
+		<CaseStudyCards />
+		<AlsoBuilt />
+	</div>
+</section>
+
 <!-- Experience Timeline -->
 <section id="experience" class="pt-20 pb-24 relative -mt-8">
 	<div class="container mx-auto px-6 md:px-8 max-w-4xl">
@@ -1053,7 +1007,8 @@
 			<div class="space-y-12 pl-12 md:pl-[20%]">
 				{#each experiences as experience, index (experience.id)}
 					{@const isLeadership =
-						experience.position === "Technical Project Lead"}
+						experience.position === "Technical Project Lead" ||
+						experience.position === "CTO and co-founder"}
 					<div class="relative reveal experience-item group">
 						<!-- Timeline Dot - Hollow by default, fills on hover -->
 						<div
@@ -1131,7 +1086,26 @@
 	</div>
 </section>
 
-<!-- Contact Section - Terminal/Command Center -->
+<Skills />
+
+<section id="about" class="px-6 py-16 md:px-8">
+	<div class="mx-auto max-w-3xl">
+		<h2 class="mb-6 text-4xl font-bold tracking-tight text-text-heading md:text-5xl">About</h2>
+		<div class="space-y-4 text-lg leading-relaxed text-text-body">
+			<p>
+				I'm Daniel, but everyone calls me Bubu. I'm based in Tema and just finished a Computer Science degree at KNUST. I build software around the smallest details of the real people it's for, because I think most software feels generic when builders skip the slow part.
+			</p>
+			<p>
+				Right now I do QA and frontend work at RPL Technologies, where I test an expense automation system for a bank through a core-banking upgrade. I'm also CTO at KAVD Corp, a bootstrapped startup with three friends, building a booking site for a neighbourhood barber (my first paid project), and turning my final-year interview simulator into a product called Nkonim.
+			</p>
+			<p>
+				Off the clock: chess, basketball, the gym, long walks with a head full of questions, and playlists heavy on Obongjayar, Tems and M.anifest.
+			</p>
+		</div>
+	</div>
+</section>
+
+<!-- Contact Section -->
 <section id="contact" class="py-20 relative overflow-hidden">
 	<!-- Background Gradient Anchor -->
 	<div
@@ -1146,12 +1120,11 @@
 				<h2
 					class="text-5xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 drop-shadow-lg"
 				>
-					Ready to Ship?
+					Let's talk
 				</h2>
+				<!-- TODO(Daniel): confirm a reply-time promise before adding one. -->
 				<p class="text-text-body text-lg mb-8 leading-relaxed">
-					I'm currently open for new projects. Whether you have a
-					question or just want to say hi, I'll try my best to get
-					back to you!
+					I'm open to remote part-time roles in React, Next.js, product engineering and QA (about 21 hours a week while I finish national service, until around November 2027), and to small freelance builds. Email is the quickest way to reach me.
 				</p>
 
 				<!-- Email with Copy Functionality -->
@@ -1161,9 +1134,11 @@
 					>
 						Direct Line
 					</div>
-					<button
+						<button
+						type="button"
 						on:click={copyEmail}
-						class="group relative w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-azure/50 transition-all flex items-center justify-between cursor-pointer"
+						class="group relative w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-azure/50 transition-all flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-azure"
+						aria-label="Copy danielmawuena75@gmail.com"
 					>
 						<span class="text-text-heading font-mono text-lg"
 							>danielmawuena75@gmail.com</span
@@ -1296,6 +1271,22 @@
 							/>
 						</svg>
 					</a>
+					<a
+						href="https://x.com/thatbubuguy"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-azure/50 transition-all"
+					>
+						<span class="text-text-heading font-semibold">X</span>
+					</a>
+					<a
+						href="https://thatbubuguy.substack.com/"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex items-center gap-4 w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg hover:border-azure/50 transition-all"
+					>
+						<span class="text-text-heading font-semibold">Substack</span>
+					</a>
 				</div>
 			</div>
 
@@ -1312,6 +1303,7 @@
 							class="hidden absolute opacity-0 -z-50"
 							bind:value={form.honeypot}
 							tabindex="-1"
+							aria-hidden="true"
 							autocomplete="off"
 						/>
 
@@ -1324,8 +1316,10 @@
 							<input
 								type="text"
 								id="name"
+								name="name"
+								autocomplete="name"
+								aria-required="true"
 								bind:value={form.name}
-								required
 								disabled={status === "submitting"}
 								class="w-full px-4 h-12 md:py-3 md:h-auto bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
 								placeholder="Enter your name"
@@ -1341,8 +1335,10 @@
 							<input
 								type="email"
 								id="email"
+								name="email"
+								autocomplete="email"
+								aria-required="true"
 								bind:value={form.email}
-								required
 								disabled={status === "submitting"}
 								class="w-full px-4 h-12 md:py-3 md:h-auto bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
 								placeholder="your.email@example.com"
@@ -1357,8 +1353,10 @@
 							>
 							<textarea
 								id="message"
+								name="message"
+								autocomplete="off"
+								aria-required="true"
 								bind:value={form.message}
-								required
 								rows="6"
 								disabled={status === "submitting"}
 								class="w-full px-4 py-3 min-h-[120px] md:min-h-0 bg-black/40 border-b border-white/20 focus:border-blue-500 focus:outline-none text-text-heading resize-none transition-all terminal-input disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1366,21 +1364,18 @@
 							></textarea>
 						</div>
 
-						{#if status === "success"}
-							<div
-								class="p-4 bg-green-900/30 border border-green-500 rounded-lg text-green-400 font-mono text-sm"
-							>
-								{feedback ||
-									"✓ Transmission successful! I'll get back to you soon."}
-							</div>
-						{:else if status === "error"}
-							<div
-								class="p-4 bg-red-900/30 border border-red-500 rounded-lg text-red-400 font-mono text-sm"
-							>
-								{feedback ||
-									"✗ Transmission failed. Please try again."}
-							</div>
-						{/if}
+						<div
+							class="min-h-6 font-mono text-sm"
+							aria-live="polite"
+							role="status"
+							data-testid="form-status"
+						>
+							{#if status === "success"}
+								<p class="rounded-lg border border-green-500 bg-green-900/30 p-4 text-green-300">{feedback}</p>
+							{:else if status === "error"}
+								<p class="rounded-lg border border-red-500 bg-red-900/30 p-4 text-red-300">{feedback}</p>
+							{/if}
+						</div>
 
 						<button
 							type="submit"
@@ -1412,7 +1407,7 @@
 									Initializing...
 								</span>
 							{:else}
-								Send Transmission
+								Send message
 							{/if}
 						</button>
 					</form>
@@ -1453,8 +1448,7 @@
 
 	.philosophy-copy {
 		/* Old-style Roman serif — Jenson-adjacent, clean classical vibe */
-		font-family: "EB Garamond", "Palatino Linotype", "Book Antiqua", Palatino, Georgia,
-			serif;
+		font-family: Palatino, Georgia, serif;
 		font-weight: 400;
 	}
 

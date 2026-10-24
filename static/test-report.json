@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "passed": 29,
+  "failed": 0,
+  "total": 29,
+  "skipped": null,
+  "ranAt": "2026-10-24T09:52:24.787Z",
+  "source": "playwright"
+}

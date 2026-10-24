@@ -2,17 +2,18 @@
   "name": "sleek-portfolio",
   "version": "1.0.0",
   "private": true,
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"test:e2e": "playwright test",
-		"test:e2e:ui": "playwright test --ui",
-		"test:e2e:report": "playwright show-report"
-	},
+  "scripts": {
+    "dev": "vite dev",
+		"build": "node scripts/generate-sitemap.mjs && vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
+  },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.62.1",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.0.0",
@@ -20,6 +21,7 @@
     "@types/node": "^20.10.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
+    "sharp": "^0.35.5",
     "svelte": "^4.2.7",
     "svelte-check": "^3.6.0",
     "tailwindcss": "^3.4.0",
@@ -30,6 +32,8 @@
   "type": "module",
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@motionone/svelte": "^10.16.4",
     "firebase": "^12.6.0",
     "gsap": "^3.12.2",

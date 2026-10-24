@@ -10,8 +10,7 @@
   body {
     background: #050505 !important;
     color: #a1a1aa;
-    font-family: "Geist Sans", "Inter", "-apple-system", "BlinkMacSystemFont",
-      "system-ui", sans-serif;
+    font-family: "Inter Variable", "Inter", system-ui, sans-serif;
     letter-spacing: -0.01em;
     antialiased: true;
   }
@@ -493,4 +492,80 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .playlist-marquee,
+  .tech-marquee-left,
+  .tech-marquee-right,
+  .waveform-bar,
+  .aurora-bg,
+  .status-dot,
+  .hero-gradient-text,
+  .animate-pulse-slow,
+  .animate-pulse-slower,
+  .animate-fade-in,
+  .animate-slide-down {
+    animation: none !important;
+  }
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background: #f4f4f5 !important;
+  color: #3f3f46 !important;
+}
+
+html.light .text-text-heading {
+  color: #18181b !important;
+}
+
+html.light .text-text-body {
+  color: #3f3f46 !important;
+}
+
+html.light .text-text-muted {
+  color: #52525b !important;
+}
+
+html.light .bg-obsidian-base,
+html.light .min-h-screen {
+  background-color: #f4f4f5;
+}
+
+html.light .bg-neutral-900\/50,
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.light .border-white\/10,
+html.light .border-zinc-800 {
+  border-color: rgba(24, 24, 27, 0.12) !important;
+}
+
+html.light .bg-white\/5,
+html.light .bg-black\/40,
+html.light .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.light .pill-badge {
+  background: rgba(24, 24, 27, 0.04);
+  border-color: rgba(24, 24, 27, 0.12);
+}
+
+html.light nav {
+  color: #18181b;
 }

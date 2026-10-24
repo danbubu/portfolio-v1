@@ -18,60 +18,96 @@ export interface Certification {
 	link: string;
 }
 
+// TODO(Daniel): confirm a distinction for the team-of-8 project before that word appears anywhere.
+// TODO(Daniel): confirm Wondez is happy to be named publicly. The entry uses the dossier name until you say otherwise.
+
 export const experiences: WorkExperience[] = [
 	{
-		id: 'rpl',
-		company: 'RPL Technologies',
-		position: 'QA / Frontend Development',
-		location: 'Accra, Ghana',
+		id: 'kavd',
+		company: 'KAVD Corp',
+		position: 'CTO and co-founder',
+		location: 'Remote. Bootstrapped, not yet registered',
 		startDate: '2026',
 		endDate: null,
 		description: [
-			'QA testing on an Expense Automation solution built for Fidelity Bank Ghana — validating critical workflows and catching regressions before release',
-			'Frontend development on Kemy, shipping responsive UI and interactive product flows with modern React tooling',
-			'Partner with engineering on release quality through clear bug reports, reproducible cases, and polished UI delivery'
+			'Four of us, all on national service, bootstrapped and not yet registered. I set up every repository, chose the stack and write the working instructions so we can build asynchronously.'
 		],
-		technologies: ['QA', 'React', 'Frontend', 'Testing', 'JavaScript', 'Git']
+		technologies: ['CTO', 'GitHub', 'Async']
 	},
 	{
-		id: '0',
-		company: 'KNUST (Capstone)',
+		id: 'rpl',
+		company: 'RPL Technologies',
+		position: 'QA and Frontend Engineer',
+		location: 'Remote · Part-time (national service)',
+		startDate: '2026',
+		endDate: null,
+		description: [
+			'Run a structured QA loop on each build: verify developer fixes, log findings and send batched QA reports to the engineering lead.',
+			'QA-test an Expense Automation system for Fidelity Bank Ghana across a Flexcube 11.7 to 14.7 migration, catching regressions before release. RPL works with OrangeTech on this project.',
+			'Build responsive UI and product flows in React on Kemy, a separate product.'
+		],
+		technologies: ['QA', 'React', 'Playwright', 'JavaScript', 'Git']
+	},
+	{
+		id: 'wondez',
+		company: 'Wondez Barber',
+		position: 'Freelance developer',
+		location: 'Tema, Ghana',
+		startDate: '2026',
+		endDate: 'In build',
+		description: [
+			'My first paid project: online booking with a GHS 50 deposit via Paystack, so a neighbourhood barber loses less time to no-shows. 34 edge cases written down before any booking code.'
+		],
+		technologies: ['React', 'Supabase', 'Paystack']
+	},
+	{
+		id: 'intervue',
+		company: 'KNUST final-year project (Intervue AI)',
 		position: 'Technical Project Lead',
+		location: 'Kumasi, Ghana',
+		startDate: '2025',
+		endDate: '2026',
+		description: [
+			'Designed and built Intervue AI, a live voice mock-interview app (Next.js 15, React 19, Supabase). My partner Winifred Anokye researched the company data.',
+			'Ran sprint planning, architecture and QA: 84 unit tests across 35 suites and six production-build Playwright specs.'
+		],
+		technologies: ['Next.js', 'Supabase', 'Playwright', 'QA']
+	},
+	{
+		id: 'virtuguide',
+		company: 'KNUST third-year project',
+		position: 'Team Lead (team of 8)',
 		location: 'Kumasi, Ghana',
 		startDate: 'Jan 2025',
 		endDate: 'Apr 2025',
 		description: [
-			'Directed a cross-functional team of 8 engineers to develop and deploy two full-stack applications: "KNUST VIRTUGUIDE" (Campus Navigation System) and "Medical Symptom Checker" (Healthcare AI)',
-			'Orchestrated Agile sprint planning, architecture design, and strict QA protocols, resulting in a distinction-grade delivery',
-			'Implemented CI/CD pipelines and established coding standards using React, Node.js, and Git'
+			'Led eight students building KNUST VirtuGuide (campus navigation and virtual tour) and a Medical Symptom Checker.',
+			'Ran sprint planning, set coding standards and put CI in place so eight people could ship into one codebase.'
 		],
-		technologies: ['Leadership', 'Agile', 'React', 'Firebase', 'Node.js', 'Git']
+		technologies: ['Leadership', 'React', 'Node.js', 'Firebase', 'Git']
 	},
 	{
-		id: '1',
+		id: 'adroit-2024',
 		company: 'Adroit 360',
-		position: 'Web Developer Intern',
+		position: 'Software Development Intern',
 		location: 'Tema, Ghana',
 		startDate: 'Aug 2024',
 		endDate: 'Oct 2024',
 		description: [
-			'Collaborated with UI/UX teams to implement pixel-perfect responsive designs',
-			'Optimized existing React codebases for better performance and accessibility',
-			'Shipped production interfaces using Tailwind CSS and modern JavaScript'
+			'Built responsive React and Tailwind interfaces with the UI/UX team, with attention to performance and accessibility.'
 		],
 		technologies: ['React', 'Tailwind CSS', 'JavaScript', 'Git']
 	},
 	{
-		id: '2',
+		id: 'adroit-2023',
 		company: 'Adroit 360',
 		position: 'Web Developer Intern',
 		location: 'Tema, Ghana',
 		startDate: 'Aug 2023',
 		endDate: 'Nov 2023',
 		description: [
-			'Assisted in the development of client websites and web applications',
-			'Learned and applied industry best practices for version control and code quality',
-			'Participated in daily stand-ups and agile development processes'
+			'Built client websites with HTML, CSS, JavaScript, Bootstrap and PHP.',
+			'Used version control and joined daily stand-ups.'
 		],
 		technologies: ['HTML/CSS', 'JavaScript', 'Bootstrap', 'PHP']
 	}
@@ -82,7 +118,7 @@ export const certifications: Certification[] = [
 		id: '1',
 		title: 'AWS Certified Cloud Practitioner',
 		issuer: 'Amazon Web Services',
-		date: '2025',
+		date: 'August 2025 (valid to August 2028)',
 		image: '/images/aws_certified_cloud_practitioner.png',
 		link: 'https://www.credly.com/badges/4b871c78-3ec1-4b64-a5fb-c437b03aee74/academic_transcript'
 	},

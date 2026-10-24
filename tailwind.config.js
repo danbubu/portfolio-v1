@@ -18,22 +18,18 @@ export default {
         text: {
           heading: "#EDEDED", // Never pure white for headings
           body: "#A1A1AA", // Zinc-400 for body text
-          muted: "#71717A", // Zinc-500 for muted text
+          muted: "#8E8E99", // Clears 4.5:1 on #050505
         },
       },
       fontFamily: {
         sans: [
-          "Geist Sans",
+          "Inter Variable",
           "Inter",
-          "-apple-system",
-          "BlinkMacSystemFont",
           "system-ui",
           "sans-serif",
         ],
         serif: [
-          "EB Garamond",
           "Palatino Linotype",
-          "Book Antiqua",
           "Palatino",
           "Georgia",
           "serif",

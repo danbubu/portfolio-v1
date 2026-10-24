@@ -7,6 +7,7 @@
 		techChips,
 		type Project
 	} from '$lib/stores/projects';
+	import TestReport from '$lib/components/TestReport.svelte';
 
 	export let mode: 'builder' | 'thinker' = 'builder';
 
@@ -167,7 +168,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								class="preview-shot relative block h-full w-full overflow-hidden bg-black"
-								aria-label="Open {current.title} live site"
+								aria-label="Open live {current.title} site"
 							>
 								<img
 									src={activePreview}
@@ -197,15 +198,18 @@
 									{#each previews as _, i}
 										<button
 											type="button"
-											class="h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-azure {i ===
-											previewIndex
-												? 'w-4 bg-azure'
-												: 'w-1.5 bg-white/35 hover:bg-white/55'}"
+											class="inline-flex h-6 w-6 items-center justify-center focus:outline-none focus:ring-2 focus:ring-azure"
 											aria-label="Show preview image {i + 1}"
 											aria-selected={i === previewIndex}
 											role="tab"
 											on:click={(e) => goToPreview(i, e)}
-										></button>
+										>
+											<span
+												class="block h-1.5 rounded-full {i === previewIndex
+													? 'w-4 bg-azure'
+													: 'w-1.5 bg-white/35'}"
+											></span>
+										</button>
 									{/each}
 								</div>
 							{/if}
@@ -226,7 +230,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								class="preview-shot relative block h-full w-full overflow-hidden bg-black"
-								aria-label="Open {current.title} live site"
+								aria-label="Open live {current.title} site"
 							>
 								<img
 									src={activePreview}
@@ -251,15 +255,18 @@
 									{#each previews as _, i}
 										<button
 											type="button"
-											class="h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-azure {i ===
-											previewIndex
-												? 'w-4 bg-azure'
-												: 'w-1.5 bg-white/35 hover:bg-white/55'}"
+											class="inline-flex h-6 w-6 items-center justify-center focus:outline-none focus:ring-2 focus:ring-azure"
 											aria-label="Show preview image {i + 1}"
 											aria-selected={i === previewIndex}
 											role="tab"
 											on:click={(e) => goToPreview(i, e)}
-										></button>
+										>
+											<span
+												class="block h-1.5 rounded-full {i === previewIndex
+													? 'w-4 bg-azure'
+													: 'w-1.5 bg-white/35'}"
+											></span>
+										</button>
 									{/each}
 								</div>
 							{/if}
@@ -268,10 +275,14 @@
 				</div>
 
 				<div class="showcase-body flex min-h-0 flex-1 flex-col lg:justify-between">
-					<div class="showcase-copy min-h-0 flex-1">
+					<div class="showcase-copy min-h-0 flex-1" role="region" aria-label="Project summary" tabindex="0">
 						<div class="mb-1.5 flex flex-wrap items-center gap-1.5">
 							<span
-								class="pill-badge bg-green-500/20 text-green-400 border-green-500/50 text-[10px] px-2 py-0.5"
+								class="pill-badge text-[10px] px-2 py-0.5 {current.status === 'Live'
+									? 'bg-green-500/20 text-green-400 border-green-500/50'
+									: current.status === 'Archived'
+										? 'bg-zinc-500/20 text-zinc-300 border-zinc-500/50'
+										: 'bg-purple-500/20 text-purple-300 border-purple-500/40'}"
 								>{current.status}</span
 							>
 							<span class="pill-badge text-azure border-azure/30 text-[10px] px-2 py-0.5"
@@ -302,17 +313,38 @@
 								>
 							{/each}
 						</div>
+						{#if current.reportTicks?.length || current.reportNotes?.length}
+							<div class="mb-2">
+								<TestReport
+									ticks={current.reportTicks ?? []}
+									notes={current.reportNotes ?? []}
+								/>
+							</div>
+						{/if}
 					</div>
 
-					<a
-						href={current.link}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-azure hover:underline text-sm font-mono inline-flex items-center gap-1 flex-shrink-0"
-						data-testid="project-live-link"
-					>
-						View Live Project →
-					</a>
+					<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+						{#if current.link}
+							<a
+								href={current.link}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-azure hover:underline text-sm font-mono inline-flex min-h-6 items-center gap-1 flex-shrink-0"
+								data-testid="project-live-link"
+							>
+								{current.status === 'Archived' ? 'View archived site' : 'View Live Project'} →
+							</a>
+						{/if}
+						{#if current.caseStudy}
+							<a
+								href="/work/{current.caseStudy}/"
+								class="text-sm font-mono text-text-heading underline-offset-2 hover:underline inline-flex min-h-6 items-center"
+								data-testid="project-case-study"
+							>
+								Read case study
+							</a>
+						{/if}
+					</div>
 				</div>
 			</div>
 		{:else}
@@ -322,7 +354,7 @@
 					<span class="pill-badge text-xs px-2 py-1">{current.title}</span>
 				</div>
 
-				<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+				<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1" role="region" aria-label="Project notes" tabindex="0">
 					<div>
 						<h3 class="text-lg font-bold text-text-heading mb-1.5">Inspiration</h3>
 						<p class="text-text-body text-sm leading-relaxed">{current.inspiration}</p>
@@ -342,15 +374,16 @@
 				{#each list as project, i}
 					<button
 						type="button"
-						class="h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-azure {i ===
-						index
-							? 'w-6 bg-azure'
-							: 'w-1.5 bg-white/25 hover:bg-white/40'}"
+						class="inline-flex h-6 w-6 items-center justify-center focus:outline-none focus:ring-2 focus:ring-azure"
 						aria-label="Show {project.title}"
 						aria-selected={i === index}
 						role="tab"
 						on:click={() => goTo(i)}
-					></button>
+					>
+						<span
+							class="block h-1.5 rounded-full {i === index ? 'w-4 bg-azure' : 'w-1.5 bg-white/25'}"
+						></span>
+					</button>
 				{/each}
 			</div>
 
@@ -421,4 +454,5 @@
 		z-index: 1;
 		transition: opacity 280ms ease;
 	}
+
 </style>
